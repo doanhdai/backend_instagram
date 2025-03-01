@@ -8,6 +8,7 @@ public class BackendInstagramApplication {
 
 	public static void main(String[] args) {
 		SpringApplication.run(BackendInstagramApplication.class, args);
+		System.out.println("xin chao");
 	}
 
 }
