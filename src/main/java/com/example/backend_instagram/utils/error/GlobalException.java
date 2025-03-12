@@ -23,10 +23,11 @@ public class GlobalException {
     value = {
       UsernameNotFoundException.class,
       BadCredentialsException.class,
-      IdInvalidException.class,
+      IdInvalidException.class
     }
   )
   public ResponseEntity<RestResponse<Object>> handleIdException(Exception e) {
+     System.out.println("Exception caught: " + e.getMessage());
     RestResponse<Object> res = new RestResponse<>();
     res.setStatusCode(HttpStatus.BAD_REQUEST.value());
     res.setError(e.getMessage());

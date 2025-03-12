@@ -1,6 +1,6 @@
 package com.example.backend_instagram.utils;
 
-
+import com.example.backend_instagram.domain.dto.RestLogin;
 import com.nimbusds.jose.util.Base64;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -21,6 +21,7 @@ import org.springframework.security.oauth2.jwt.JwsHeader;
 import org.springframework.security.oauth2.jwt.JwtClaimsSet;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
+import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -44,8 +45,9 @@ public class SecurityUntil {
   private long refreshToken;
 
   public String createToken(
-    Authentication authentication,
-    com.example.backend_instagram.domain.dto.RestLogin.UserLogin restLogin
+    String email,
+    RestLogin.UserLogin restLogin
+    
   ) {
     Instant now = Instant.now();
     Instant validity = now.plus(jwtKeyExpiration, ChronoUnit.SECONDS);
@@ -59,7 +61,7 @@ public class SecurityUntil {
       .builder()
       .issuedAt(now)
       .expiresAt(validity)
-      .subject(authentication.getName())
+      .subject(email)
       .claim("user", restLogin)
       .claim("permission", listAuthority)
       .build();
@@ -70,7 +72,10 @@ public class SecurityUntil {
       .getTokenValue();
   }
 
-  public String refreshToken(String email, com.example.backend_instagram.domain.dto.RestLogin restLogin) {
+  public String refreshToken(
+    String email,
+    com.example.backend_instagram.domain.dto.RestLogin restLogin
+  ) {
     Instant now = Instant.now();
     Instant validity = now.plus(refreshToken, ChronoUnit.SECONDS);
     JwtClaimsSet claims = JwtClaimsSet
@@ -119,5 +124,31 @@ public class SecurityUntil {
         authentication.getCredentials() instanceof String
       )
       .map(authentication -> (String) authentication.getCredentials());
+  }
+
+  private SecretKey getSecretKey() {
+    byte[] keyBytes = Base64.from(jwtKey).decode();
+    return new SecretKeySpec(
+      keyBytes,
+      0,
+      keyBytes.length,
+      SecurityUntil.JWT_ALGORITHM.getName()
+    );
+  }
+
+  public org.springframework.security.oauth2.jwt.Jwt checkValidRefreshToken(
+    String token
+  ) {
+    NimbusJwtDecoder jwtDecoder = NimbusJwtDecoder
+      .withSecretKey(getSecretKey())
+      .macAlgorithm(SecurityUntil.JWT_ALGORITHM)
+      .build();
+
+    try {
+      return jwtDecoder.decode(token);
+    } catch (Exception e) {
+      System.out.println(">>> refreshToken error: " + e.getMessage());
+      throw e;
+    }
   }
 }
