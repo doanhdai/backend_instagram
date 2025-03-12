@@ -40,7 +40,7 @@ public class User {
   private boolean isOnline;
 
   private String socketId;
-   @Column(columnDefinition = "MEDIUMTEXT")
+  @Column(columnDefinition = "MEDIUMTEXT")
   private String refreshToken;
   private Instant createdAt;
   private Instant updatedAt;

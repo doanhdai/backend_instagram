@@ -23,4 +23,14 @@ public  class RestLogin {
     private String email;
     private String name;
   }
+  @Getter
+  @Setter
+  @AllArgsConstructor
+  @NoArgsConstructor
+  public static class UserGetAccout {
+
+    private UserLogin user;
+  }
+
+
 }

@@ -17,6 +17,6 @@ public class ResCreateUserDTO {
   private String userGender;
   private String userBio;
   private String userBday;
-
+private String userNikName;
   private Instant createdAt;
 }

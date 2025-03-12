@@ -63,7 +63,7 @@ public class SecurityConfiguration {
       .cors(Customizer.withDefaults())
       .authorizeHttpRequests(authz ->
         authz
-          .requestMatchers("/test", "/api/v1/auth/login")
+          .requestMatchers("/test", "/api/v1/auth/login" ,"/api/v1/user","/api/v1/auth/register")
           .permitAll() // 🔹 Cho phép truy cập không cần xác thực
           // .anyRequest().authenticated()
           .anyRequest()

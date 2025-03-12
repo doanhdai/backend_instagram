@@ -12,4 +12,7 @@ import com.example.backend_instagram.domain.User;
 public interface UserRepository extends JpaRepository<User, Long>, JpaSpecificationExecutor<User> {
   User findByUserEmail(String userEmail); 
   boolean existsByUserEmail(String userEmail); 
+  boolean existsByUserNickname(String userNickname );
+  User findByRefreshTokenAndUserEmail(String refreshToken, String userEmail );
+  
 }

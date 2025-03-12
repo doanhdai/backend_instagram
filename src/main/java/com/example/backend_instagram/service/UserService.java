@@ -29,6 +29,10 @@ public class UserService {
    public boolean isEmailExist(String email) {
     return this.userRepository.existsByUserEmail(email);
   }
+
+  public boolean isNikNameExsit (String nikname ) {
+    return this.userRepository.existsByUserNickname(nikname);
+  }
   public void updateUserToken(String token, String email) {
     User currentUser = this.handleGetUserByUserNawm(email);
     if (currentUser != null) {
@@ -41,6 +45,7 @@ public class UserService {
 
     resCreateUserDTO.setId(user.getId());
     resCreateUserDTO.setName(user.getUserFullname());
+   resCreateUserDTO.setUserNikName(user.getUserNickname());
     resCreateUserDTO.setEmail(user.getUserEmail());
     resCreateUserDTO.setUserBio(user.getUserBio());
     resCreateUserDTO.setUserBday(user.getUserBday());
@@ -48,6 +53,11 @@ public class UserService {
     resCreateUserDTO.setGender(user.getUserGender());
 
     return resCreateUserDTO;
+  }
+
+  
+  public User getUserByRefreshTokenAndUserEmail (String token , String email){
+    return this.userRepository.findByRefreshTokenAndUserEmail(token, email);
   }
 
 }
