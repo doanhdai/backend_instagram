@@ -17,15 +17,13 @@ import software.amazon.awssdk.services.s3.model.*;
 public class AwsS3Service {
     private final S3Client s3Client;
     private final String bucketName;
-    private final String region; // Lưu region riêng
-
-    // Load environment variables
+    private final String region; 
     private static final Dotenv dotenv = Dotenv.load();
 
     public AwsS3Service() {
         String accessKey = dotenv.get("AWS_ACCESS_KEY");
         String secretKey = dotenv.get("AWS_SECRET_KEY");
-        this.region = dotenv.get("AWS_REGION");  // Lưu giá trị region
+        this.region = dotenv.get("AWS_REGION");  
         this.bucketName = dotenv.get("AWS_S3_BUCKET_NAME");
 
         this.s3Client = S3Client.builder()
