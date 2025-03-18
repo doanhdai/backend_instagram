@@ -21,10 +21,10 @@ public class AwsS3Service {
     private static final Dotenv dotenv = Dotenv.load();
 
     public AwsS3Service() {
-        String accessKey = dotenv.get("AWS_ACCESS_KEY");
-        String secretKey = dotenv.get("AWS_SECRET_KEY");
-        this.region = dotenv.get("AWS_REGION");  
-        this.bucketName = dotenv.get("AWS_S3_BUCKET_NAME");
+        String accessKey = dotenv.get("ACCESS_KEY");
+        String secretKey = dotenv.get("SECRET_KEY");
+        this.region = dotenv.get("REGION");  
+        this.bucketName = dotenv.get("BUCKET_NAME");
 
         this.s3Client = S3Client.builder()
                 .region(Region.of(region))
