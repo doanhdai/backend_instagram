@@ -80,7 +80,9 @@ public class AuthController {
     RestLogin.UserLogin userLogin = new RestLogin.UserLogin(
       currentuserDb.getId(),
       currentuserDb.getUserEmail(),
-      currentuserDb.getUserFullname()
+      currentuserDb.getUserFullname(),
+      currentuserDb.getUserImage(),
+      currentuserDb.getUserNickname()
     );
     restLogin.setUser(userLogin);
 
@@ -152,7 +154,9 @@ public class AuthController {
       RestLogin.UserLogin userLogin = new RestLogin.UserLogin(
         currentuserDb.getId(),
         currentuserDb.getUserEmail(),
-        currentuserDb.getUserFullname()
+        currentuserDb.getUserFullname(),
+        currentuserDb.getUserImage(),
+        currentuserDb.getUserNickname()
       );
       restLogin.setUser(userLogin);
     }
@@ -193,7 +197,7 @@ public class AuthController {
   }
 
   @PostMapping("/auth/logout")
-  @ApiMessage("Login User")
+  @ApiMessage("loout User")
   public ResponseEntity<Void> logout() throws IdInvalidException {
     String email = SecurityUntil.getCurrentUserLogin().isPresent()
       ? SecurityUntil.getCurrentUserLogin().get()
@@ -232,8 +236,10 @@ public class AuthController {
       throw new IdInvalidException("Người dùng đã tồn tại trong hệ thống");
     }
 
-    if(this.userService.isNikNameExsit(bodyUser.getUserNickname()) ){
-      throw new IdInvalidException("Nickname đã tồn tại. Vui lòng chọn nickname khác!");
+    if (this.userService.isNikNameExsit(bodyUser.getUserNickname())) {
+      throw new IdInvalidException(
+        "Nickname đã tồn tại. Vui lòng chọn nickname khác!"
+      );
     }
 
     String hassPassWord =
@@ -244,5 +250,4 @@ public class AuthController {
       .status(HttpStatus.CREATED)
       .body(this.userService.convertToResCreateUserDTO(listUser));
   }
-  
 }

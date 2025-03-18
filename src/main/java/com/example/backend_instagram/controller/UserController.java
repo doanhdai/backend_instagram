@@ -3,11 +3,15 @@ package com.example.backend_instagram.controller;
 import com.example.backend_instagram.domain.User;
 import com.example.backend_instagram.domain.dto.ResCreateUserDTO;
 import com.example.backend_instagram.service.UserService;
+import com.example.backend_instagram.utils.AwsS3Service;
 import com.example.backend_instagram.utils.error.IdInvalidException;
 
 import jakarta.validation.Valid;
 
+import java.util.Base64;
 import java.util.List;
+import java.util.UUID;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -23,10 +27,11 @@ public class UserController {
 
   private final UserService userService;
   private final PasswordEncoder passwordEncoder;
-
-  public UserController(UserService userService , PasswordEncoder passwordEncoder) {
+  private final AwsS3Service awsS3Service;
+  public UserController(UserService userService , PasswordEncoder passwordEncoder , AwsS3Service awsS3Service) {
     this.userService = userService;
     this.passwordEncoder= passwordEncoder;
+    this.awsS3Service = awsS3Service;
   }
 
   @GetMapping("/user/all")
@@ -35,26 +40,46 @@ public class UserController {
       .status(HttpStatus.OK)
       .body(this.userService.getAllUser());
   }
-
-   @PostMapping("/user")
-  public ResponseEntity<ResCreateUserDTO> createNewUser(
+@PostMapping("/user")
+public ResponseEntity<ResCreateUserDTO> createNewUser(
     @Valid @RequestBody User postManUser
-  ) throws IdInvalidException {
-    boolean isEmailExist =
-      this.userService.isEmailExist(postManUser.getUserEmail());
+) throws IdInvalidException {
+    boolean isEmailExist = userService.isEmailExist(postManUser.getUserEmail());
+    
     if (isEmailExist) {
-      throw new IdInvalidException(
-        "Email" +
-        postManUser.getUserEmail() +
-        "đã tồn tại , vui lòng sử dụng email khác"
-      );
+        throw new IdInvalidException("Email " + postManUser.getUserEmail() + " đã tồn tại, vui lòng sử dụng email khác.");
     }
-    String hassPassWord =
-      this.passwordEncoder.encode(postManUser.getUserPassword());
-    postManUser.setUserPassword(hassPassWord);
-    User listUser = this.userService.createUser(postManUser);
+
+    // Hash mật khẩu trước khi lưu
+    String hashedPassword = passwordEncoder.encode(postManUser.getUserPassword());
+    postManUser.setUserPassword(hashedPassword);
+
+    // Xử lý upload ảnh (nếu có)
+    if (postManUser.getUserImage() != null && !postManUser.getUserImage().isEmpty()) {
+    String base64Image = postManUser.getUserImage();
+
+    // Kiểm tra và loại bỏ tiền tố "data:image/png;base64,"
+    if (base64Image.contains(",")) {
+        base64Image = base64Image.split(",")[1];
+    }
+
+    try {
+        byte[] imageBytes = Base64.getDecoder().decode(base64Image); // Giải mã Base64
+        String fileName = "avatars/" + UUID.randomUUID() + ".png"; // Đặt tên file ngẫu nhiên
+        String imageUrl = awsS3Service.uploadFile(fileName, imageBytes); // Upload lên S3
+        postManUser.setUserImage(imageUrl);
+    } catch (IllegalArgumentException e) {
+        System.err.println("Lỗi giải mã Base64: " + e.getMessage());
+    }
+}
+
+
+    // Lưu user vào database
+    User newUser = userService.createUser(postManUser);
+
     return ResponseEntity
-      .status(HttpStatus.CREATED)
-      .body(this.userService.convertToResCreateUserDTO(listUser));
-  }
+            .status(HttpStatus.CREATED)
+            .body(userService.convertToResCreateUserDTO(newUser));
+}
+
 }
