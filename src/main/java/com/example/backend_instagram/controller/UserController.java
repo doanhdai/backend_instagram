@@ -50,23 +50,18 @@ public ResponseEntity<ResCreateUserDTO> createNewUser(
         throw new IdInvalidException("Email " + postManUser.getUserEmail() + " đã tồn tại, vui lòng sử dụng email khác.");
     }
 
-    // Hash mật khẩu trước khi lưu
     String hashedPassword = passwordEncoder.encode(postManUser.getUserPassword());
     postManUser.setUserPassword(hashedPassword);
-
-    // Xử lý upload ảnh (nếu có)
     if (postManUser.getUserImage() != null && !postManUser.getUserImage().isEmpty()) {
     String base64Image = postManUser.getUserImage();
-
-    // Kiểm tra và loại bỏ tiền tố "data:image/png;base64,"
     if (base64Image.contains(",")) {
         base64Image = base64Image.split(",")[1];
     }
 
     try {
-        byte[] imageBytes = Base64.getDecoder().decode(base64Image); // Giải mã Base64
-        String fileName = "avatars/" + UUID.randomUUID() + ".png"; // Đặt tên file ngẫu nhiên
-        String imageUrl = awsS3Service.uploadFile(fileName, imageBytes); // Upload lên S3
+        byte[] imageBytes = Base64.getDecoder().decode(base64Image); 
+        String fileName = "avatars/" + UUID.randomUUID() + ".png"; 
+        String imageUrl = awsS3Service.uploadFile(fileName, imageBytes); 
         postManUser.setUserImage(imageUrl);
     } catch (IllegalArgumentException e) {
         System.err.println("Lỗi giải mã Base64: " + e.getMessage());
