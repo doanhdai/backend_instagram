@@ -6,7 +6,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Component;
 
-import com.example.backend_instagram.domain.User;
+import com.example.backend_instagram.entity.User;
 import com.example.backend_instagram.repository.UserRepository;
 
 import java.util.Collections;

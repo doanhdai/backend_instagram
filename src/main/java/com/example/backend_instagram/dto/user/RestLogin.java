@@ -1,4 +1,4 @@
-package com.example.backend_instagram.domain.dto;
+package com.example.backend_instagram.dto.user;
 
 
 import lombok.AllArgsConstructor;

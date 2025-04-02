@@ -4,7 +4,6 @@ package com.example.backend_instagram.utils.error;
 import jakarta.persistence.NoResultException;
 import java.util.List;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -14,7 +13,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-import com.example.backend_instagram.domain.dto.RestResponse;
+import com.example.backend_instagram.dto.user.RestResponse;
 
 @RestControllerAdvice
 public class GlobalException {

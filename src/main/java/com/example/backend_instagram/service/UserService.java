@@ -4,8 +4,8 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
-import com.example.backend_instagram.domain.User;
-import com.example.backend_instagram.domain.dto.ResCreateUserDTO;
+import com.example.backend_instagram.entity.User;
+import com.example.backend_instagram.dto.user.ResCreateUserDTO;
 import com.example.backend_instagram.repository.UserRepository;
 @Service
 public class UserService {
