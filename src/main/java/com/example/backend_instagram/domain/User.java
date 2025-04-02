@@ -21,10 +21,8 @@ public class User {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
-
   @Column(nullable = false, unique = true)
   private String userNickname;
-
   @Column(nullable = false)
   private String userFullname;
   private String userBday;
@@ -34,16 +32,16 @@ public class User {
   private String userImage;
   private String userGender;
   private String userBio;
-
   @Column(nullable = false)
   private boolean isOnline;
-
   private String socketId;
   @Column(columnDefinition = "MEDIUMTEXT")
   private String refreshToken;
   private Instant createdAt;
   private Instant updatedAt;
   private String createdBy;
-  private String updatedBy;
+  private String updatedBy; 
 }
+
+
   

@@ -34,3 +34,4 @@ build/
 .env.aws
 aws-config.env
 aws-credentials.properties
+.env

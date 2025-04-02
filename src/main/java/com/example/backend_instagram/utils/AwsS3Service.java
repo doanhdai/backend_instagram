@@ -13,11 +13,13 @@ import software.amazon.awssdk.services.s3.model.*;
 
 
 
+
 @Service
 public class AwsS3Service {
     private final S3Client s3Client;
     private final String bucketName;
     private final String region; 
+    
     private static final Dotenv dotenv = Dotenv.load();
 
     public AwsS3Service() {
@@ -33,7 +35,6 @@ public class AwsS3Service {
                 ))
                 .build();
     }
-
     public String uploadFile(String fileName, byte[] fileData) {
         try {
             PutObjectRequest request = PutObjectRequest.builder()
@@ -44,7 +45,7 @@ public class AwsS3Service {
 
             s3Client.putObject(request, RequestBody.fromBytes(fileData));
 
-            // Sửa URL đúng format theo region
+    
             return "https://" + bucketName + ".s3." + region + ".amazonaws.com/" + fileName;
         } catch (Exception e) {
             throw new RuntimeException("Lỗi upload file lên S3: " + e.getMessage());

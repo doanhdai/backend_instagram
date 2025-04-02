@@ -1,12 +1,15 @@
 package com.example.backend_instagram.domain.dto;
 
 import java.time.Instant;
+
 import lombok.Getter;
 import lombok.Setter;
 
-@Getter
+
 @Setter
-public class ResCreateUserDTO {
+@Getter
+public class RestUpdateUser {
+    
   private long id;
   private String name;
   private String email;
@@ -17,5 +20,6 @@ public class ResCreateUserDTO {
   private String userBio;
   private String userBday;
   private String userNikName;
-  private Instant createdAt;
+private Instant updatedAt;
+
 }
