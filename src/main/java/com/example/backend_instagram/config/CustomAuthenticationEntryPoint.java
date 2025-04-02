@@ -1,7 +1,6 @@
 package com.example.backend_instagram.config;
 
-import com.example.backend_instagram.*;
-import com.example.backend_instagram.domain.dto.RestResponse;
+import com.example.backend_instagram.dto.user.RestResponse;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.oauth2.server.resource.web.BearerTokenAuthenticationEntryPoint;
@@ -11,8 +10,6 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Optional;
 
 @Component

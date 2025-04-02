@@ -32,7 +32,7 @@ import org.springframework.security.oauth2.server.resource.web.access.BearerToke
 import org.springframework.security.web.SecurityFilterChain;
 
 @Configuration
-@EnableWebSecurity // 🔹 Cần có để kích hoạt bảo mật Spring Security
+@EnableWebSecurity
 @EnableMethodSecurity
 public class SecurityConfiguration {
 

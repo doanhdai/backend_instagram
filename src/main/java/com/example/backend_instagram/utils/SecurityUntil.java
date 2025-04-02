@@ -1,6 +1,6 @@
 package com.example.backend_instagram.utils;
 
-import com.example.backend_instagram.domain.dto.RestLogin;
+import com.example.backend_instagram.dto.user.RestLogin;
 import com.nimbusds.jose.util.Base64;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -10,9 +10,7 @@ import java.util.Optional;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.security.oauth2.resource.OAuth2ResourceServerProperties.Jwt;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -74,7 +72,7 @@ public class SecurityUntil {
 
   public String refreshToken(
     String email,
-    com.example.backend_instagram.domain.dto.RestLogin restLogin
+    com.example.backend_instagram.dto.user.RestLogin restLogin
   ) {
     Instant now = Instant.now();
     Instant validity = now.plus(refreshToken, ChronoUnit.SECONDS);

@@ -1,8 +1,8 @@
 package com.example.backend_instagram.service;
 
-import com.example.backend_instagram.domain.User;
-import com.example.backend_instagram.domain.dto.ResCreateUserDTO;
-import com.example.backend_instagram.domain.dto.RestUpdateUser;
+import com.example.backend_instagram.dto.user.ResCreateUserDTO;
+import com.example.backend_instagram.dto.user.RestUpdateUser;
+import com.example.backend_instagram.entity.User;
 import com.example.backend_instagram.repository.UserRepository;
 import java.util.List;
 import java.util.Optional;

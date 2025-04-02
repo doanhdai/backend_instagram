@@ -1,8 +1,8 @@
-package com.example.backend_instagram.domain;
+package com.example.backend_instagram.entity;
 
 
 import java.time.Instant;
-import java.time.LocalDateTime;
+
 import jakarta.persistence.Column;
 
 import jakarta.persistence.Entity;

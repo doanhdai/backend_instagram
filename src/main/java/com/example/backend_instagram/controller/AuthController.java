@@ -1,8 +1,9 @@
 package com.example.backend_instagram.controller;
-import com.example.backend_instagram.domain.User;
-import com.example.backend_instagram.domain.dto.LoginDTO;
-import com.example.backend_instagram.domain.dto.ResCreateUserDTO;
-import com.example.backend_instagram.domain.dto.RestLogin;
+
+import com.example.backend_instagram.entity.User;
+import com.example.backend_instagram.dto.user.LoginDTO;
+import com.example.backend_instagram.dto.user.ResCreateUserDTO;
+import com.example.backend_instagram.dto.user.RestLogin;
 import com.example.backend_instagram.service.UserService;
 import com.example.backend_instagram.utils.SecurityUntil;
 import com.example.backend_instagram.utils.constant.ApiMessage;
@@ -22,7 +23,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
 
 @RestController
 @RequestMapping("/api/v1")

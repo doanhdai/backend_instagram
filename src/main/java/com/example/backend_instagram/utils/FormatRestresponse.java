@@ -12,7 +12,7 @@ import org.springframework.http.server.ServletServerHttpResponse;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseBodyAdvice;
 
-import com.example.backend_instagram.domain.dto.RestResponse;
+import com.example.backend_instagram.dto.user.RestResponse;
 import com.example.backend_instagram.utils.constant.ApiMessage;
 
 @RestControllerAdvice

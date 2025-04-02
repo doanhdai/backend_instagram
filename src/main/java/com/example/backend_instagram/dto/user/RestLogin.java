@@ -1,5 +1,4 @@
-package com.example.backend_instagram.domain.dto;
-
+package com.example.backend_instagram.dto.user;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -8,8 +7,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public  class RestLogin {
-
+public class RestLogin {
   private String accessToken;
   private UserLogin user;
 
@@ -18,21 +16,18 @@ public  class RestLogin {
   @AllArgsConstructor
   @NoArgsConstructor
   public static class UserLogin {
-
     private Long id;
     private String email;
     private String name;
     private String avatar;
     private String nikName;
   }
+
   @Getter
   @Setter
   @AllArgsConstructor
   @NoArgsConstructor
   public static class UserGetAccout {
-
     private UserLogin user;
   }
-
-
-}
+} 

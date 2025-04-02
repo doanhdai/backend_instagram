@@ -1,8 +1,8 @@
 package com.example.backend_instagram.controller;
 
-import com.example.backend_instagram.domain.User;
-import com.example.backend_instagram.domain.dto.ResCreateUserDTO;
-import com.example.backend_instagram.domain.dto.RestUpdateUser;
+import com.example.backend_instagram.entity.User;
+import com.example.backend_instagram.dto.user.ResCreateUserDTO;
+import com.example.backend_instagram.dto.user.RestUpdateUser;
 import com.example.backend_instagram.service.UserService;
 import com.example.backend_instagram.utils.AwsS3Service;
 import com.example.backend_instagram.utils.error.IdInvalidException;
