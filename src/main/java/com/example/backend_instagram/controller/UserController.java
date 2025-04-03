@@ -26,7 +26,6 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/v1")
 public class UserController {
-
   private final UserService userService;
   private final PasswordEncoder passwordEncoder;
   private final AwsS3Service awsS3Service;
@@ -47,6 +46,7 @@ public class UserController {
       .status(HttpStatus.OK)
       .body(this.userService.getAllUser());
   }
+
   @PostMapping("/user")
   public ResponseEntity<ResCreateUserDTO> createNewUser(
     @Valid @RequestBody User postManUser
