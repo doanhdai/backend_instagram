@@ -80,4 +80,61 @@ public class PostService {
         post.setMedia(mediaList);
         return postRepository.save(post);
     }
+
+    public List<Post> getAllPostsByUserId(Long userId) {
+        return postRepository.findByUserIdAndStatus(userId, "True");
+    }
+
+    @Transactional
+    public Post updatePost(Long postId, CreatePostRequest request) {
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new RuntimeException("Post not found"));
+
+        // Update basic post information
+        post.setTitle(request.getTitle());
+        post.setStatus(request.getStatus());
+        post.setAccess(request.getAccess());
+
+        // If there are new media files
+        if (request.getMedia() != null && !request.getMedia().isEmpty()) {
+            // Delete old media files from S3
+            for (Media oldMedia : post.getMedia()) {
+                // You might want to add a method in AwsS3Service to delete files
+                // awsS3Service.deleteFile(oldMedia.getUrl());
+            }
+            post.getMedia().clear();
+
+            // Process and save new media files
+            List<Media> mediaList = new ArrayList<>();
+            for (MultipartFile file : request.getMedia()) {
+                try {
+                    String originalFilename = file.getOriginalFilename();
+                    String extension = originalFilename.substring(originalFilename.lastIndexOf("."));
+                    String mediaType = file.getContentType().startsWith("image/") ? "IMAGE" : "VIDEO";
+                    String fileName = System.currentTimeMillis() + "_" + mediaType.toLowerCase() + extension;
+                    String url = awsS3Service.uploadFile(fileName, file.getBytes());
+
+                    Media media = new Media();
+                    media.setUrl(url);
+                    media.setType(mediaType);
+                    media.setPost(post);
+                    media = mediaRepository.save(media);
+                    mediaList.add(media);
+                } catch (IOException e) {
+                    throw new RuntimeException("Failed to process file: " + e.getMessage());
+                }
+            }
+            post.setMedia(mediaList);
+        }
+
+        return postRepository.save(post);
+    }
+
+    @Transactional
+    public void deletePost(Long postId) {
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new RuntimeException("Post not found"));
+        post.setStatus("false");
+        postRepository.save(post);
+    }
 }

@@ -73,7 +73,7 @@ public class UserService {
     resCreateUserDTO.setEmail(user.getUserEmail());
     resCreateUserDTO.setUserBio(user.getUserBio());
     resCreateUserDTO.setUserBday(user.getUserBday());
-    resCreateUserDTO.setCreatedAt(user.getCreatedAt());
+    resCreateUserDTO.setCreatedAt(user.getCreatedAt().toInstant(java.time.ZoneOffset.UTC));
     resCreateUserDTO.setGender(user.getUserGender());
     return resCreateUserDTO;
   }
