@@ -23,13 +23,11 @@ public class PostController {
             @RequestParam("media") List<MultipartFile> media,
             @RequestParam("status") String status,
             @RequestParam("access") String access) {
-
         CreatePostRequest request = new CreatePostRequest();
         request.setTitle(title);
         request.setMedia(media);
         request.setStatus(status);
         request.setAccess(access);
-
         Post post = postService.createPost(userId, request);
         return ResponseEntity.ok(post);
     }
