@@ -85,6 +85,10 @@ public class PostService {
         return postRepository.findByUserIdAndStatus(userId, "True");
     }
 
+    public List<Post> getAllPosts() {
+        return postRepository.findByStatus("True");
+    }
+
     @Transactional
     public Post updatePost(Long postId, CreatePostRequest request) {
         Post post = postRepository.findById(postId)

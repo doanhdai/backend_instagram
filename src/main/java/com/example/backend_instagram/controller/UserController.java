@@ -30,7 +30,6 @@ public class UserController {
   private final UserService userService;
   private final PasswordEncoder passwordEncoder;
   private final AwsS3Service awsS3Service;
-
   public UserController(
     UserService userService,
     PasswordEncoder passwordEncoder,

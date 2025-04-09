@@ -32,12 +32,12 @@ public class StoryService {
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
         try {
-            // Generate unique filename
+            
             String originalFilename = file.getOriginalFilename();
             String extension = originalFilename.substring(originalFilename.lastIndexOf("."));
             String fileName = System.currentTimeMillis() + "_story" + extension;
 
-            // Upload to S3
+            
             String url = awsS3Service.uploadFile(fileName, file.getBytes());
 
             // Create and save story
@@ -58,8 +58,10 @@ public class StoryService {
     }
 
     public List<Story> getAllStories() {
-        return storyRepository.findByStatus(1);
+        return storyRepository.findByStatus(2);
     }
+
+
 
     @Transactional
     public void deleteStory(Long storyId) {
@@ -69,15 +71,15 @@ public class StoryService {
         storyRepository.save(story);
     }
 
-    @Scheduled(fixedRate = 60000) // Chạy mỗi phút
-    @Transactional
-    public void updateExpiredStories() {
-        LocalDateTime twentyFourHoursAgo = LocalDateTime.now().minusHours(24);
-        List<Story> expiredStories = storyRepository.findByStatusAndCreatedAtBefore(1, twentyFourHoursAgo);
+    // @Scheduled(fixedRate = 60000) // Chạy mỗi phút
+    // @Transactional
+    // public void updateExpiredStories() {
+    //     LocalDateTime twentyFourHoursAgo = LocalDateTime.now().minusHours(24);
+    //     List<Story> expiredStories = storyRepository.findByStatusAndCreatedAtBefore(1, twentyFourHoursAgo);
 
-        for (Story story : expiredStories) {
-            story.setStatus(2);
-            storyRepository.save(story);
-        }
-    }
+    //     for (Story story : expiredStories) {
+    //         story.setStatus(2);
+    //         storyRepository.save(story);
+    //     }
+    // }
 }
