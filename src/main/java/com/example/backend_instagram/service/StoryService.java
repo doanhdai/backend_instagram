@@ -58,7 +58,7 @@ public class StoryService {
     }
 
     public List<Story> getAllStories() {
-        return storyRepository.findByStatus(2);
+        return storyRepository.findByStatus(1);
     }
 
 
