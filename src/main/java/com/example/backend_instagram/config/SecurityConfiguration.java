@@ -66,6 +66,8 @@ public class SecurityConfiguration {
           .requestMatchers("/test", "/api/v1/auth/login" ,"/api/v1/user","/api/v1/auth/register")
           .permitAll() // 🔹 Cho phép truy cập không cần xác thực
           // .anyRequest().authenticated()
+          .requestMatchers("/api/v1/messages/**").authenticated()
+          .requestMatchers("/ws/**").permitAll() // Thêm dòng này
           .anyRequest()
           .authenticated() // 🔹 Các request khác phải đăng nhập
       )

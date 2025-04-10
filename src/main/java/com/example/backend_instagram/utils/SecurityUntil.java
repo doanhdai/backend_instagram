@@ -83,7 +83,6 @@ public class SecurityUntil {
       .subject(email)
       .claim("user", restLogin.getUser())
       .build();
-
     return this.jwtEncoder.encode(
         JwtEncoderParameters.from(JwsHeader.with(() -> "HS512").build(), claims)
       )
