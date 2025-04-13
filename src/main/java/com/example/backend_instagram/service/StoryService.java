@@ -54,7 +54,7 @@ public class StoryService {
     }
 
     public List<Story> getStoriesByUserId(Long userId) {
-        return storyRepository.findByUserId(userId);
+        return storyRepository.findByUserIdAndStatus(userId, 1);
     }
 
     public List<Story> getAllStories() {
@@ -80,4 +80,15 @@ public class StoryService {
 //            storyRepository.save(story);
 //        }
 //    }
+    // @Scheduled(fixedRate = 60000) // Chạy mỗi phút
+    // @Transactional
+    // public void updateExpiredStories() {
+    //     LocalDateTime twentyFourHoursAgo = LocalDateTime.now().minusHours(24);
+    //     List<Story> expiredStories = storyRepository.findByStatusAndCreatedAtBefore(1, twentyFourHoursAgo);
+
+    //     for (Story story : expiredStories) {
+    //         story.setStatus(2);
+    //         storyRepository.save(story);
+    //     }
+    // }
 }

@@ -84,7 +84,12 @@ public class FollowService {
         });
 
         followRepository.delete(follow);
+    } 
+    public void QualityFollow(Long userId) {
+        List<Follow> followers = followRepository.findByFollowingId(userId);
+        
     }
+     
 
 
 }
