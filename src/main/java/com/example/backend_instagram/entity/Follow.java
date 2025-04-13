@@ -46,4 +46,10 @@ public class Follow {
         this.friend = isFriend;
         this.blocking = isBlocking;
     }
+
+    public Boolean getFriend() {
+        return this.friend;
+    }
+
+
 }

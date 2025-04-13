@@ -1,15 +1,14 @@
 package com.example.backend_instagram.controller;
 
+import com.example.backend_instagram.dto.follow.FollowResponseDTO;
 import com.example.backend_instagram.entity.Follow;
 import com.example.backend_instagram.entity.User;
 import com.example.backend_instagram.service.FollowService;
+import com.example.backend_instagram.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -19,6 +18,9 @@ public class FollowController {
 
     @Autowired
     private FollowService followService;
+
+    @Autowired
+    private UserService userService;
 
     @GetMapping("/all")
     public ResponseEntity<List<Follow>> getFollow() {
@@ -35,5 +37,26 @@ public class FollowController {
     @GetMapping("/following/{userId}")
     public List<Follow> getFollowing(@PathVariable Long userId) {
         return followService.getFollowingOfUser(userId);
+    }
+
+    @PostMapping("/create")
+    public ResponseEntity<FollowResponseDTO> followUser(@RequestParam Long followerId, @RequestParam Long followingId) {
+        User follower = userService.fetchUserById(followerId);
+        User following = userService.fetchUserById(followingId);
+
+        FollowResponseDTO response = followService.createFollow(follower, following);
+
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(response);
+    }
+
+
+    @PostMapping("/unfollow")
+    public ResponseEntity<Void> unfollowUser(@RequestParam Long followerId, @RequestParam Long followingId) {
+        User follower = userService.fetchUserById(followerId);
+        User following = userService.fetchUserById(followingId);
+        followService.unfollow(follower, following);
+        return ResponseEntity.noContent().build(); // HTTP 204
     }
 }
