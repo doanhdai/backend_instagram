@@ -14,4 +14,6 @@ public interface StoryRepository extends JpaRepository<Story, Long> {
     List<Story> findByStatusAndCreatedAtBefore(Integer status, LocalDateTime createdAt);
 
     List<Story> findByStatus(Integer status);
+
+    List<Story> findByUserIdAndStatus(Long userId, Integer status);
 }

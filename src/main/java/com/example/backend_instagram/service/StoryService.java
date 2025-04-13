@@ -69,15 +69,15 @@ public class StoryService {
         storyRepository.save(story);
     }
 
-//    @Scheduled(fixedRate = 60000) // Chạy mỗi phút
-//    @Transactional
-//    public void updateExpiredStories() {
-//        LocalDateTime twentyFourHoursAgo = LocalDateTime.now().minusHours(24);
-//        List<Story> expiredStories = storyRepository.findByStatusAndCreatedAtBefore(1, twentyFourHoursAgo);
-//
-//        for (Story story : expiredStories) {
-//            story.setStatus(2);
-//            storyRepository.save(story);
-//        }
-//    }
+    @Scheduled(fixedRate = 60000) // Chạy mỗi phút
+    @Transactional
+    public void updateExpiredStories() {
+        LocalDateTime twentyFourHoursAgo = LocalDateTime.now().minusHours(24);
+        List<Story> expiredStories = storyRepository.findByStatusAndCreatedAtBefore(1, twentyFourHoursAgo);
+
+        for (Story story : expiredStories) {
+            story.setStatus(2);
+            storyRepository.save(story);
+        }
+    }
 }
