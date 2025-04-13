@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface FollowRepository extends JpaRepository<Follow, Long> {
+public interface FollowRepository extends JpaRepository<Follow, FollowId> {
     List<Follow> findByFollowerId(Long userId);
     List<Follow> findByFollowingId(Long userId);
 
