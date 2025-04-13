@@ -38,6 +38,11 @@ public class PostController {
         List<Post> posts = postService.getAllPostsByUserId(userId);
         return ResponseEntity.ok(posts);
     }
+    @GetMapping
+    public ResponseEntity<List<Post>> getAllPosts() {
+        List<Post> posts = postService.getAllPosts();
+        return ResponseEntity.ok(posts);
+    }
 
     // update post
     @PutMapping("/{postId}")
