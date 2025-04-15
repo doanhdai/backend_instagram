@@ -51,4 +51,20 @@ public class AwsS3Service {
             throw new RuntimeException("Lỗi upload file lên S3: " + e.getMessage());
         }
     }
+
+    public void deleteFile(String fileUrl) {
+        try {
+            // Extract the key from the URL
+            String key = fileUrl.substring(fileUrl.lastIndexOf("/") + 1);
+            
+            DeleteObjectRequest deleteObjectRequest = DeleteObjectRequest.builder()
+                    .bucket(bucketName)
+                    .key(key)
+                    .build();
+
+            s3Client.deleteObject(deleteObjectRequest);
+        } catch (Exception e) {
+            throw new RuntimeException("Lỗi xóa file từ S3: " + e.getMessage());
+        }
+    }
 }

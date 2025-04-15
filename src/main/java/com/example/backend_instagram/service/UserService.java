@@ -4,17 +4,26 @@ import com.example.backend_instagram.dto.user.ResCreateUserDTO;
 import com.example.backend_instagram.dto.user.RestUpdateUser;
 import com.example.backend_instagram.entity.User;
 import com.example.backend_instagram.repository.UserRepository;
+import com.example.backend_instagram.repository.PostRepository;
+import com.example.backend_instagram.dto.user.UserStatsDTO;
+import com.example.backend_instagram.service.FollowService;
 import java.util.List;
 import java.util.Optional;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
 public class UserService {
 
   private final UserRepository userRepository;
+  private final PostRepository postRepository;
+  private final FollowService followService;
 
-  public UserService(UserRepository userRepository) {
+  @Autowired
+  public UserService(UserRepository userRepository, PostRepository postRepository, FollowService followService) {
     this.userRepository = userRepository;
+    this.postRepository = postRepository;
+    this.followService = followService;
   }
 
   public User createUser(User user) {
@@ -37,12 +46,16 @@ public class UserService {
     return this.userRepository.existsByUserNickname(nikname);
   }
 
-  public void updateUserToken(String token, String email) {
-    User currentUser = this.handleGetUserByUserNawm(email);
-    if (currentUser != null) {
-      currentUser.setRefreshToken(token);
-      this.userRepository.save(currentUser);
+  public void updateUserToken(String refreshToken, String username) {
+    User user = handleGetUserByUserNawm(username);
+    if (user != null) {
+      user.setRefreshToken(refreshToken);
+      userRepository.save(user);
     }
+  }
+
+  public void updateUser(User user) {
+    userRepository.save(user);
   }
 
   public User fetchUserById(Long id) {
@@ -103,6 +116,19 @@ public class UserService {
     } catch (Exception e) {
       return false;
     }
+  }
+
+  public UserStatsDTO getUserStats(Long userId) {
+    User user = fetchUserById(userId);
+    Long followersCount = followService.countFollowersOfUser(userId);
+    Long followingCount = followService.countFollowingOfUser(userId);
+    Long postsCount = postRepository.countByUserId(userId);
+    
+    return new UserStatsDTO(user, followersCount, followingCount, postsCount);
+  }
+
+  public User getUserById (Long userId) {
+    return this.userRepository.findById(userId).orElse(null);
   }
 
 }

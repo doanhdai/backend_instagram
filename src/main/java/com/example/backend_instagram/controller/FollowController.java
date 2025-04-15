@@ -39,6 +39,15 @@ public class FollowController {
         return followService.getFollowingOfUser(userId);
     }
 
+    @GetMapping("/following/users/{userId}")
+    public ResponseEntity<List<User>> getFollowingUsers(@PathVariable Long userId) {
+        List<Follow> follows = followService.getFollowingOfUser(userId);
+        List<User> followingUsers = follows.stream()
+            .map(Follow::getFollowing)
+            .toList();
+        return ResponseEntity.ok(followingUsers);
+    }
+
     @PostMapping("/create")
     public ResponseEntity<FollowResponseDTO> followUser(@RequestParam Long followerId, @RequestParam Long followingId) {
         User follower = userService.fetchUserById(followerId);
@@ -59,4 +68,13 @@ public class FollowController {
         followService.unfollow(follower, following);
         return ResponseEntity.noContent().build(); // HTTP 204
     }
+
+
+
+    @GetMapping("/following/count/{userId}")
+    public ResponseEntity<Long> countFollowing(@PathVariable Long userId) {
+        Long count = followService.countFollowingOfUser(userId);
+        return ResponseEntity.ok(count);
+    }
+
 }

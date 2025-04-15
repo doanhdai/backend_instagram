@@ -69,4 +69,10 @@ public class PostController {
         postService.deletePost(postId);
         return ResponseEntity.ok().build();
     }
+    @GetMapping("/admin") 
+    public ResponseEntity<List<Post>> getAllPostsAdmin() {
+        List<Post> posts = postService.getAllPostsAdmin();
+        return ResponseEntity.ok(posts);
+    }
+     
 }

@@ -3,6 +3,7 @@ package com.example.backend_instagram.controller;
 import com.example.backend_instagram.entity.User;
 import com.example.backend_instagram.dto.user.ResCreateUserDTO;
 import com.example.backend_instagram.dto.user.RestUpdateUser;
+import com.example.backend_instagram.dto.user.UserStatsDTO;
 import com.example.backend_instagram.service.UserService;
 import com.example.backend_instagram.utils.AwsS3Service;
 import com.example.backend_instagram.utils.error.IdInvalidException;
@@ -132,4 +133,19 @@ if (
     }  
     return ResponseEntity.ok().build();
   }
+
+  @GetMapping("/stats/{userId}")
+  public ResponseEntity<UserStatsDTO> getUserStats(@PathVariable Long userId) {
+    UserStatsDTO stats = userService.getUserStats(userId);
+    return ResponseEntity.ok(stats);
+  }
+
+
+  @GetMapping("/user/{userId}")
+  public ResponseEntity<User> getUserById(@PathVariable Long userId) {
+    User user = userService.getUserById(userId);
+    return ResponseEntity.ok(user);
+  }
+  
+  
 }

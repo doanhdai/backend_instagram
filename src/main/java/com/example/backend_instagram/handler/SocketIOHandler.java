@@ -6,6 +6,8 @@ import com.corundumstudio.socketio.listener.DataListener;
 import com.corundumstudio.socketio.listener.DisconnectListener;
 import com.example.backend_instagram.dto.user.CallData;
 import com.example.backend_instagram.dto.user.AnswerData;
+import com.example.backend_instagram.service.UserService;
+import com.example.backend_instagram.entity.User;
 
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
@@ -19,10 +21,12 @@ public class SocketIOHandler {
 
   private final SocketIOServer server; // Inject từ config
   private final ConcurrentHashMap<String, SocketIOClient> userSocketMap = new ConcurrentHashMap<>();
+  private final UserService userService;
 
   // Inject SocketIOServer từ Bean
-  public SocketIOHandler(SocketIOServer server) {
+  public SocketIOHandler(SocketIOServer server, UserService userService) {
     this.server = server;
+    this.userService = userService;
   }
 
   @PostConstruct
@@ -36,6 +40,12 @@ public class SocketIOHandler {
 
       if (userId != null) {
         userSocketMap.put(userId, client);
+        // Cập nhật trạng thái online
+        User user = userService.handleGetUserByUserNawm(userId);
+        if (user != null) {
+          user.setIsOnline(true);
+          userService.updateUser(user);
+        }
         client.sendEvent("me", userId);
         System.out.println("✅ User connected: " + userId);
         System.out.println(
@@ -59,6 +69,12 @@ public class SocketIOHandler {
 
       if (userIdToRemove != null) {
         userSocketMap.remove(userIdToRemove);
+        // Cập nhật trạng thái online
+        User user = userService.handleGetUserByUserNawm(userIdToRemove);
+        if (user != null) {
+          user.setIsOnline(false);
+          userService.updateUser(user);
+        }
         System.out.println("❌ User disconnected: " + userIdToRemove);
         System.out.println(
           "📊 Remaining connected users: " + userSocketMap.keySet()
@@ -208,6 +224,7 @@ public class SocketIOHandler {
         }
       }
     );
+    
 
     System.out.println("🚀 Socket.IO Handler started!");
   }

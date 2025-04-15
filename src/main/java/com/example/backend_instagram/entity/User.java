@@ -49,4 +49,12 @@ public class User {
   protected void onCreate() {
     createdAt = LocalDateTime.now();
   }
+
+  public void setIsOnline(boolean isOnline) {
+    this.isOnline = isOnline;
+  }
+
+  public boolean getIsOnline() {
+    return this.isOnline;
+  }
 }

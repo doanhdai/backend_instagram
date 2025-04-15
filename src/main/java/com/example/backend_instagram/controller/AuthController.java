@@ -75,6 +75,10 @@ public class AuthController {
     SecurityContextHolder.getContext().setAuthentication(authentication);
     RestLogin restLogin = new RestLogin();
 
+    // Cập nhật trạng thái online
+    currentuserDb.setIsOnline(true);
+    userService.updateUser(currentuserDb);
+
     RestLogin.UserLogin userLogin = new RestLogin.UserLogin(
       currentuserDb.getId(),
       currentuserDb.getUserEmail(),

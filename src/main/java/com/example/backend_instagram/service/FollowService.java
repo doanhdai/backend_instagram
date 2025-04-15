@@ -87,9 +87,14 @@ public class FollowService {
     } 
     public void QualityFollow(Long userId) {
         List<Follow> followers = followRepository.findByFollowingId(userId);
-        
     }
-     
 
+    public Long countFollowersOfUser(Long userId) {
+        return followRepository.countByFollowingId(userId);
+    }
+
+    public Long countFollowingOfUser(Long userId) {
+        return followRepository.countByFollowerId(userId);
+    }
 
 }
