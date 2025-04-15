@@ -239,7 +239,7 @@ public class SocketIOHandler {
                             notifyData.put("message", message);
                             notifyData.put("timestamp", timestamp);
 
-                            receiver.sendEvent("followNotification", notifyData);
+                            receiver.sendEvent("receiveFollowNotification", notifyData);
                             System.out.println("✅ Follow notification sent to " + toUserId);
                         } else {
                             System.out.println("❌ User " + toUserId + " is not connected.");
