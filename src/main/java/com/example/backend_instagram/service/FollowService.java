@@ -60,8 +60,8 @@ public class FollowService {
 
         // Tạo notification
         Notification notification = new Notification();
-        notification.setContent(currUser.getUserNickname() + " has followed you.");
-        notification.setUserId(followedUser);
+        // notification.setContent(currUser.getUserNickname() + " has followed you.");
+        // notification.setUserId(followedUser);
         notification.setSentAt(LocalDateTime.now());
         notification.setRead(false);
         Notification savedNotification = notificationRepository.save(notification);

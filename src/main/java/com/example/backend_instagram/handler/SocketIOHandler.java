@@ -6,6 +6,7 @@ import com.corundumstudio.socketio.listener.DataListener;
 import com.corundumstudio.socketio.listener.DisconnectListener;
 import com.example.backend_instagram.dto.user.CallData;
 import com.example.backend_instagram.dto.user.AnswerData;
+import com.example.backend_instagram.dto.notification.NotificationDTO;
 
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
@@ -17,7 +18,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class SocketIOHandler {
 
-  private final SocketIOServer server; // Inject từ config
+  private final SocketIOServer server;
   private final ConcurrentHashMap<String, SocketIOClient> userSocketMap = new ConcurrentHashMap<>();
 
   // Inject SocketIOServer từ Bean
@@ -71,6 +72,15 @@ public class SocketIOHandler {
         );
       }
     });
+
+
+    // Log khi gửi thông báo (tùy chọn, để debug)
+    server.addEventListener("notification", NotificationDTO.class, (client, data, ackSender) -> {
+      System.out
+          .println("📢 Nhận sự kiện notification cho user: " + data.getUserId() + ", nội dung: " + data.getMessage());
+    });
+
+    System.out.println("🚀 Socket.IO Handler started!");
 
     // Xử lý cuộc gọi
     server.addEventListener(

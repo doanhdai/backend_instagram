@@ -1,53 +1,60 @@
 package com.example.backend_instagram.controller;
 
-import com.example.backend_instagram.entity.Notification;
+import com.example.backend_instagram.dto.notification.NotificationDTO;
 import com.example.backend_instagram.entity.User;
 import com.example.backend_instagram.service.NotificationService;
 import com.example.backend_instagram.service.UserService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/v1/notification")
 public class NotificationController {
 
-    @Autowired
-    private NotificationService notificationService;
+    private final NotificationService notificationService;
+    private final UserService userService;
 
-    @Autowired
-    private UserService userService;
+    public NotificationController(NotificationService notificationService, UserService userService) {
+        this.notificationService = notificationService;
+        this.userService = userService;
+    }
 
-    // GET ALL NOTIFICATIONS (optional, useful for admin or debug)
     @GetMapping("/all")
-    public ResponseEntity<List<Notification>> getAllNotifications() {
-        return ResponseEntity.ok(notificationService.getAllNotifications());
+    public ResponseEntity<List<NotificationDTO>> getAllNotifications() {
+        return ResponseEntity.ok(notificationService.getAllNotifications()
+                .stream()
+                .map(notification -> {
+                    NotificationDTO dto = new NotificationDTO();
+                    dto.setNotificationId(notification.getNotificationId());
+                    dto.setUserId(notification.getUser().getId());
+                    dto.setActorId(notification.getActor().getId());
+                    dto.setActorNickname(notification.getActor().getUserNickname());
+                    dto.setPostId(notification.getPost().getId());
+                    dto.setType(notification.getType().name());
+                    dto.setMessage(notification.getMessage());
+                    dto.setRead(notification.isRead());
+                    dto.setSentAt(notification.getSentAt());
+                    return dto;
+                })
+                .collect(Collectors.toList()));
     }
 
-    // GET NOTIFICATIONS BY USER ID
     @GetMapping("/user/{userId}")
-    public ResponseEntity<List<Notification>> getNotificationsByUserId(@PathVariable Long userId) {
-        User user = userService.fetchUserById(userId);
-        if (user == null) {
-            return ResponseEntity.notFound().build();
-        }
-        return ResponseEntity.ok(notificationService.getNoticationByUserId(user));
+    public ResponseEntity<List<NotificationDTO>> getNotificationsByUserId(@PathVariable Long userId) {
+        return ResponseEntity.ok(notificationService.getNotificationsByUserId(userId));
     }
 
-    // CREATE NEW NOTIFICATION (optional)
-    @PostMapping("/create")
-    public ResponseEntity<String> createNotification(
-            @RequestParam Long userId,
-            @RequestParam String content) {
+    @GetMapping("/user/{userId}/unread")
+    public ResponseEntity<List<NotificationDTO>> getUnreadNotificationsByUserId(@PathVariable Long userId) {
+        return ResponseEntity.ok(notificationService.getUnreadNotificationsByUserId(userId));
+    }
 
-        User user = userService.fetchUserById(userId);
-        if (user == null) {
-            return ResponseEntity.badRequest().body("User not found");
-        }
-
-        notificationService.createNotification(user, content);
-        return ResponseEntity.ok("Notification created successfully");
+    @PutMapping("/{notificationId}/read")
+    public ResponseEntity<Void> markNotificationAsRead(@PathVariable Long notificationId) {
+        notificationService.markAsRead(notificationId);
+        return ResponseEntity.ok().build();
     }
 }
