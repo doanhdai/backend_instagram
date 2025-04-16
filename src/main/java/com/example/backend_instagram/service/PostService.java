@@ -80,6 +80,10 @@ public class PostService {
         return postRepository.findByStatus("True");
     }
 
+    public List<Post> getAllAdmin() {
+        return postRepository.findAll();
+    }
+
     @Transactional
     public Post updatePost(Long postId, CreatePostRequest request) {
         Post post = postRepository.findById(postId)
@@ -131,5 +135,29 @@ public class PostService {
     public Post getPostById(Long postId) {
         return postRepository.findById(postId)
                 .orElseThrow(() -> new RuntimeException("Post not found"));
+    }
+
+    @Transactional
+    public Post updatePostStatus(Long postId, String status) {
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new RuntimeException("Post not found"));
+        
+        if (status == null) {
+            throw new IllegalArgumentException("Status parameter is required");
+        }
+        
+        // Clean up the status value
+        String normalizedStatus = status.trim().toLowerCase();
+        // Remove any commas and whitespace
+        normalizedStatus = normalizedStatus.replaceAll("[, ]", "");
+        
+        if (!normalizedStatus.equals("true") && !normalizedStatus.equals("false") && !normalizedStatus.equals("1")) {
+            throw new IllegalArgumentException("Status must be either 'true', 'false' or '1'");
+        }
+        
+        // Convert status to proper format
+        String finalStatus = normalizedStatus.equals("true") || normalizedStatus.equals("1") ? "True" : "false";
+        post.setStatus(finalStatus);
+        return postRepository.save(post);
     }
 }

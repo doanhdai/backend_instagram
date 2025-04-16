@@ -212,7 +212,10 @@
 			<artifactId>socket.io-server</artifactId>
 			<version>4.0.0</version>
 		</dependency>
-
+		<dependency>
+            <groupId>com.fasterxml.jackson.datatype</groupId>
+            <artifactId>jackson-datatype-jsr310</artifactId>
+        </dependency>
 		<!-- Socket.IO Server -->
 		<dependency>
 			<groupId>com.corundumstudio.socketio</groupId>

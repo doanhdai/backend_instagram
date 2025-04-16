@@ -25,7 +25,7 @@ public class SocketIOConfig {
         config.setHostname(host);
         config.setPort(port);
         server = new SocketIOServer(config);
-        server.start(); // Bắt đầu chạy Socket.IO Server
+        server.start();
 
         System.out.println("✅ Socket.IO Server đang chạy trên cổng " + port);
         return server;
