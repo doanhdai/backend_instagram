@@ -9,10 +9,10 @@ import lombok.Setter;
 @Setter
 public class FollowResponseDTO {
     private Follow follow;
-    private Notification notification;
+//    private Notification notification;
 
-    public FollowResponseDTO(Follow follow, Notification notification) {
+    public FollowResponseDTO(Follow follow) {
         this.follow = follow;
-        this.notification = notification;
+//        this.notification = notification;
     }
 }
