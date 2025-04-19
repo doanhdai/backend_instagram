@@ -2,12 +2,9 @@ package com.example.backend_instagram.config;
 
 import com.corundumstudio.socketio.Configuration;
 import com.corundumstudio.socketio.SocketIOServer;
-<<<<<<< HEAD
 import com.corundumstudio.socketio.Transport;
-=======
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
->>>>>>> 7aaa0d3abf6729f53787353f3bbe488fc11e14aa
 import jakarta.annotation.PreDestroy;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -29,14 +26,11 @@ public class SocketIOConfig {
         Configuration config = new Configuration();
         config.setHostname(host);
         config.setPort(port);
-<<<<<<< HEAD
-=======
 
         ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.registerModule(new JavaTimeModule());
         objectMapper.disable(com.fasterxml.jackson.databind.SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
 
->>>>>>> 7aaa0d3abf6729f53787353f3bbe488fc11e14aa
         server = new SocketIOServer(config);
         server.start();
 
