@@ -222,45 +222,41 @@ public class SocketIOHandler {
       }
     );
 
-        // Xử lý thông báo theo dõi người dùng
-        server.addEventListener(
-                "followNotification",
-                Map.class,
-                new DataListener<Map>() {
-                    @Override
-                    public void onData(SocketIOClient client, Map data, AckRequest ackSender) {
-                        String fromUserId = (String) data.get("fromUserId");
-                        String fromUserName = (String) data.get("fromUserName");
-                        String toUserId = (String) data.get("toUserId");
-                        String message = (String) data.get("message"); // Nội dung tùy chọn
-                        String timestamp = (String) data.get("timestamp"); // client gửi thời gian
+    // Xử lý thông báo theo dõi người dùng
+    server.addEventListener("followNotification", Map.class, new DataListener<Map>() {
+        @Override
+        public void onData(SocketIOClient client, Map data, AckRequest ackSender) {
+            String fromUserId = (String) data.get("fromUserId");
+            String fromUserName = (String) data.get("fromUserName");
+            String toUserId = (String) data.get("toUserId");
+            String message = (String) data.get("message"); // Nội dung tùy chọn
+            String timestamp = (String) data.get("timestamp"); // client gửi thời gian
 
-                        System.out.println("📥 Follow event received:");
-                        System.out.println(" - From: " + fromUserName + " (ID: " + fromUserId + ")");
-                        System.out.println(" - To: " + toUserId);
-                        System.out.println(" - Message: " + message);
-                        System.out.println(" - Time: " + timestamp);
+            System.out.println("📥 Follow event received:");
+            System.out.println(" - From: " + fromUserName + " (ID: " + fromUserId + ")");
+            System.out.println(" - To: " + toUserId);
+            System.out.println(" - Message: " + message);
+            System.out.println(" - Time: " + timestamp);
 
-                        SocketIOClient receiver = userSocketMap.get(toUserId);
-                        if (receiver != null) {
-                            Map<String, Object> notifyData = new HashMap<>();
-                            notifyData.put("fromUserId", fromUserId);
-                            notifyData.put("fromUserName", fromUserName);
-                            notifyData.put("message", message);
-                            notifyData.put("timestamp", timestamp);
+            SocketIOClient receiver = userSocketMap.get(toUserId);
+            if (receiver != null) {
+                Map<String, Object> notifyData = new HashMap<>();
+                notifyData.put("fromUserId", fromUserId);
+                notifyData.put("fromUserName", fromUserName);
+                notifyData.put("message", message);
+                notifyData.put("timestamp", timestamp);
 
-                            receiver.sendEvent("receiveFollowNotification", notifyData);
+                receiver.sendEvent("receiveFollowNotification", notifyData);
 
-                            System.out.println("✅ Follow notification sent to " + toUserId);
-                        } else {
-                            System.out.println("❌ User " + toUserId + " is not connected.");
-                        }
-                    }
-                }
-        );
+                System.out.println("✅ Follow notification sent to " + toUserId);
+            } else {
+                System.out.println("❌ User " + toUserId + " is not connected.");
+            }
+        }
+    });
 
-        System.out.println("🚀 Socket.IO Handler started!");
-    }
+    System.out.println("🚀 Socket.IO Handler started!");
+  }
 
   @PreDestroy
   public void stopServer() {
