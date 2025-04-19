@@ -79,6 +79,10 @@ public class PostService {
     public List<Post> getAllPosts() {
         return postRepository.findByStatus("True");
     }
+    
+    public Post savePost(Post post) {
+        return postRepository.save(post);
+    }
 
     public List<Post> getAllAdmin() {
         return postRepository.findAll();
