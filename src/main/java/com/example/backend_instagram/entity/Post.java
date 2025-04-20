@@ -34,6 +34,10 @@ public class Post {
     @Column(name = "likes_count")
     private Integer likesCount = 0;
 
+    @Column(name="comments_count")
+    private Integer commentsCount=0;
+
+
     @Column(nullable = false)
     private String status;
 
