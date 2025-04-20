@@ -1,4 +1,3 @@
-
 package com.example.backend_instagram.service;
 
 import com.example.backend_instagram.dto.comment.CommentDTO;
@@ -30,10 +29,10 @@ public class CommentService {
     private final ObjectMapper objectMapper;
 
     public CommentService(CommentRepository commentRepository,
-            PostRepository postRepository,
-            UserService userService,
-            NotificationService notificationService,
-            SocketIOServer socketIOServer) {
+                          PostRepository postRepository,
+                          UserService userService,
+                          NotificationService notificationService,
+                          SocketIOServer socketIOServer) {
         this.commentRepository = commentRepository;
         this.postRepository = postRepository;
         this.userService = userService;
@@ -54,18 +53,23 @@ public class CommentService {
         comment.setUser(user);
         comment.setPost(post);
         commentRepository.save(comment);
-
+        post.setCommentsCount(post.getCommentsCount() + 1);
+        postRepository.save(post);
         // Gửi thông báo bình luận
         notificationService.createCommentNotification(postId, userId, content);
+
+        // Tính số lượng bình luận của bài viết
+        Long commentsCount = commentRepository.countByPost(post);
 
         // Phát sự kiện comment_update tới tất cả client
         try {
             CommentDTO commentDTO = toDTO(comment);
+            commentDTO.setCommentsCount(commentsCount);
             String json = objectMapper.writeValueAsString(commentDTO);
             logger.debug("CommentDTO JSON: {}", json);
             socketIOServer.getBroadcastOperations().sendEvent("comment_update", json);
-            logger.info("Broadcast comment update: postId={}, commentId={}, content={}",
-                    postId, commentDTO.getId(), content);
+            logger.info("Broadcast comment update: postId={}, commentId={}, content={}, commentsCount={}",
+                    postId, commentDTO.getId(), content, commentsCount);
         } catch (Exception e) {
             logger.error("Error broadcasting comment update: {}", e.getMessage(), e);
         }
@@ -74,10 +78,14 @@ public class CommentService {
     public List<CommentDTO> getCommentsByPostId(Long postId) {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new IllegalArgumentException("Bài viết không tồn tại"));
-        return commentRepository.findByPostOrderByCreatedAtDesc(post)
+        List<CommentDTO> comments = commentRepository.findByPostOrderByCreatedAtDesc(post)
                 .stream()
                 .map(this::toDTO)
                 .collect(Collectors.toList());
+        // Thêm commentsCount vào mỗi CommentDTO
+        Long commentsCount = commentRepository.countByPost(post);
+        comments.forEach(comment -> comment.setCommentsCount(commentsCount));
+        return comments;
     }
 
     private CommentDTO toDTO(Comment comment) {

@@ -7,7 +7,6 @@ import com.example.backend_instagram.entity.User;
 import com.example.backend_instagram.repository.MediaRepository;
 import com.example.backend_instagram.repository.PostRepository;
 import com.example.backend_instagram.repository.UserRepository;
-import com.example.backend_instagram.repository.CommentRepository;
 import com.example.backend_instagram.utils.AwsS3Service;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,18 +22,15 @@ public class PostService {
     private final UserRepository userRepository;
     private final MediaRepository mediaRepository;
     private final AwsS3Service awsS3Service;
-    private final CommentRepository commentRepository;
 
     public PostService(PostRepository postRepository,
             UserRepository userRepository,
             MediaRepository mediaRepository,
-            AwsS3Service awsS3Service,
-            CommentRepository commentRepository) {
+            AwsS3Service awsS3Service) {
         this.postRepository = postRepository;
         this.userRepository = userRepository;
         this.mediaRepository = mediaRepository;
         this.awsS3Service = awsS3Service;
-        this.commentRepository = commentRepository;
     }
 
     @Transactional
@@ -48,6 +44,7 @@ public class PostService {
         post.setStatus(request.getStatus());
         post.setAccess(request.getAccess());
         post.setLikesCount(0);
+        post.setCommentsCount(0L);
         post = postRepository.save(post);
 
         List<Media> mediaList = new ArrayList<>();
@@ -77,23 +74,11 @@ public class PostService {
     }
 
     public List<Post> getAllPostsByUserId(Long userId) {
-        List<Post> posts = postRepository.findByUserIdAndStatus(userId, "True");
-        for (Post post : posts) {
-            Long commentCount = commentRepository.countByPost(post);
-            post.setCommentsCount(commentCount.intValue());
-            postRepository.save(post);
-        }
-        return posts;
+        return postRepository.findByUserIdAndStatus(userId, "True");
     }
 
     public List<Post> getAllPosts() {
-        List<Post> posts = postRepository.findByStatus("True");
-        for (Post post : posts) {
-            Long commentCount = commentRepository.countByPost(post);
-            post.setCommentsCount(commentCount.intValue());
-            postRepository.save(post);
-        }
-        return posts;
+        return postRepository.findByStatus("True");
     }
     
     public Post savePost(Post post) {
