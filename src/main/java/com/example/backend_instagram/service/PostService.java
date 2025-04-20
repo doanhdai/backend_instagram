@@ -44,6 +44,7 @@ public class PostService {
         post.setStatus(request.getStatus());
         post.setAccess(request.getAccess());
         post.setLikesCount(0);
+        post.setCommentsCount(0L);
         post = postRepository.save(post);
 
         List<Media> mediaList = new ArrayList<>();
