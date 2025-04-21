@@ -2,7 +2,7 @@
 
 Đây là phần backend của dự án **SocialApp** – một ứng dụng mạng xã hội với tính năng đăng bài, kết bạn, trò chuyện và gọi video real-time. Backend được xây dựng bằng **Java Spring Boot**, sử dụng **MySQL** làm cơ sở dữ liệu và **AWS, WebSocket, API** cho chức năng giao tiếp thời gian thực.
 
-> 🔗 **Frontend repository**: [SocialApp Frontend](https://github.com/ten-cua-ban/socialapp-frontend)
+> 🔗 **Frontend repository**: [SocialApp Frontend](https://github.com/vanmuoi24/Social-app-fontend)
 
 ---
 
