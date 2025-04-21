@@ -40,7 +40,7 @@ public class Notification {
     @Column(name = "is_read", nullable = false)
     private boolean isRead = false;
 
-    public Notification() {
+    public  Notification() {
     }
 
     public Notification(User user, User actor, Post post, NotificationType type, String message) {
