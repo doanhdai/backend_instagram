@@ -7,24 +7,43 @@
  import com.example.backend_instagram.dto.user.CallData;
  import com.example.backend_instagram.dto.user.AnswerData;
  import com.example.backend_instagram.dto.notification.NotificationDTO;
-
+import com.example.backend_instagram.repository.NotificationRepository;
+ import com.example.backend_instagram.entity.Notification;
+ import com.example.backend_instagram.entity.NotificationType;
+ import com.example.backend_instagram.entity.Post;
+ import com.example.backend_instagram.entity.User;
  import jakarta.annotation.PostConstruct;
  import jakarta.annotation.PreDestroy;
+
+ import java.time.LocalDateTime;
  import java.util.Map;
  import java.util.concurrent.ConcurrentHashMap;
  import java.util.HashMap;
  import org.springframework.stereotype.Component;
+import com.example.backend_instagram.service.NotificationService;
+ import com.example.backend_instagram.repository.NotificationRepository;
+import jakarta.annotation.PostConstruct;
+import jakarta.annotation.PreDestroy;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.HashMap;
+
+import org.apache.catalina.Server;
+import org.springframework.stereotype.Component;
 
  @Component
  public class SocketIOHandler {
 
    private final SocketIOServer server;
    private final ConcurrentHashMap<String, SocketIOClient> userSocketMap = new ConcurrentHashMap<>();
+   private final NotificationRepository notificationRepository;
 
    // Inject SocketIOServer từ Bean
-   public SocketIOHandler(SocketIOServer server) {
+   public SocketIOHandler(SocketIOServer server, NotificationRepository notificationRepository) {
      this.server = server;
+     this.notificationRepository = notificationRepository;
    }
+
    public ConcurrentHashMap<String, SocketIOClient> getUserSocketMap() {
     return userSocketMap;
   }
@@ -231,8 +250,62 @@
        }
      );
 
+     // Xử lý thông báo theo dõi người dùng
+     server.addEventListener("followNotification", Map.class, new DataListener<Map>() {
+        @Override
+        public void onData(SocketIOClient client, Map data, AckRequest ackSender) {
+            String fromUserId = (String) data.get("fromUserId");
+            String fromUserName = (String) data.get("fromUserName");
+            String toUserId = (String) data.get("toUserId");
+            String message = (String) data.get("message"); // Nội dung tùy chọn
+            String timestamp = (String) data.get("timestamp"); // client gửi thời gian
+
+            System.out.println("📥 Follow event received:");
+            System.out.println(" - From: " + fromUserName + " (ID: " + fromUserId + ")");
+            System.out.println(" - To: " + toUserId);
+            System.out.println(" - Message: " + message);
+            System.out.println(" - Time: " + timestamp);
+
+            SocketIOClient receiver = userSocketMap.get(toUserId);
+            if (receiver != null) {
+                Map<String, Object> notifyData = new HashMap<>();
+                notifyData.put("fromUserId", fromUserId);
+                notifyData.put("fromUserName", fromUserName);
+                notifyData.put("message", message);
+                notifyData.put("timestamp", timestamp);
+
+                User fromUser = new User();
+                fromUser.setId(Long.parseLong(fromUserId));
+
+                User toUser = new User();
+                toUser.setId(Long.parseLong(toUserId));
+
+                Post post = new Post();
+
+                // Có thể chỉnh sửa id bài post cho tương thích với lap
+                post.setId(4L);
+
+                Notification notification = new Notification();
+                notification.setUser(toUser); // Người nhận thông báo
+                notification.setActor(fromUser);   // Người thực hiện hành động
+                notification.setPost(post);   // Không liên quan đến post
+                notification.setType(NotificationType.FOLLOW);
+                notification.setMessage(message);
+                notification.setSentAt(LocalDateTime.now());
+                notification.setRead(false);
+
+                notificationRepository.save(notification);
+
+                receiver.sendEvent("receiveFollowNotification", notifyData);
+
+                System.out.println("✅ Follow notification sent to " + toUserId);
+            } else {
+                System.out.println("❌ User " + toUserId + " is not connected.");
+            }
+        }
+     });
      System.out.println("🚀 Socket.IO Handler started!");
-   }
+  }
 
    @PreDestroy
    public void stopServer() {

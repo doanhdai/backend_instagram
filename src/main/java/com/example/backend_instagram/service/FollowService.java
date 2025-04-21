@@ -1,14 +1,12 @@
 package com.example.backend_instagram.service;
 
 import com.example.backend_instagram.dto.follow.FollowResponseDTO;
-import com.example.backend_instagram.entity.Follow;
-import com.example.backend_instagram.entity.Notification;
-import com.example.backend_instagram.entity.User;
+import com.example.backend_instagram.entity.*;
 import com.example.backend_instagram.repository.FollowRepository;
 import com.example.backend_instagram.repository.NotificationRepository;
 import com.example.backend_instagram.repository.UserRepository;
-import com.example.backend_instagram.entity.FollowId;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -39,7 +37,6 @@ public class FollowService {
 
 
     public FollowResponseDTO createFollow(User currUser, User followedUser) {
-        // Các bước như cũ...
         Follow follow = new Follow();
         follow.setId(new FollowId(currUser.getId(), followedUser.getId()));
         follow.setFollower(currUser);
@@ -58,16 +55,32 @@ public class FollowService {
 
         Follow savedFollow = followRepository.save(follow);
 
-        // Tạo notification
-        Notification notification = new Notification();
-        // notification.setContent(currUser.getUserNickname() + " has followed you.");
-        // notification.setUserId(followedUser);
-        notification.setSentAt(LocalDateTime.now());
-        notification.setRead(false);
-        Notification savedNotification = notificationRepository.save(notification);
+        // Tạo notification - chỉ khi người dùng không tự follow chính mình
+//        if (!currUser.getId().equals(followedUser.getId())) {
+//            try {
+//                String message = currUser.getUserNickname() + " started following you";
+//
+//                Post post = new Post();
+//                post.setId(11L);
+//
+//                // Tạo và lưu notification
+//                Notification notification = new Notification();
+//                notification.setUser(followedUser); // Người nhận thông báo
+//                notification.setActor(currUser);   // Người thực hiện hành động
+//                notification.setPost(post);   // Không liên quan đến post
+//                notification.setType(NotificationType.FOLLOW);
+//                notification.setMessage(message);
+//                notification.setSentAt(LocalDateTime.now());
+//                notification.setRead(false);
+//
+//                notificationRepository.save(notification);
+//            } catch (Exception e) {
+//                System.out.println(e);
+//            }
+//        }
 
         // Trả về DTO
-        return new FollowResponseDTO(savedFollow, savedNotification);
+        return new FollowResponseDTO(savedFollow);
     }
 
 

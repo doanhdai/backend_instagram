@@ -60,7 +60,6 @@ public class FollowController {
                 .body(response);
     }
 
-
     @PostMapping("/unfollow")
     public ResponseEntity<Void> unfollowUser(@RequestParam Long followerId, @RequestParam Long followingId) {
         User follower = userService.fetchUserById(followerId);
