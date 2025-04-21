@@ -24,7 +24,7 @@ public class Notification {
     private User actor; // Người thực hiện hành động (người thích/bình luận)
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "post_id", referencedColumnName = "id", nullable = false, foreignKey = @ForeignKey(name = "fk_post_notification_id"))
+    @JoinColumn(name = "post_id", referencedColumnName = "id", nullable = true, foreignKey = @ForeignKey(name = "fk_post_notification_id"))
     private Post post; // Bài viết liên quan
 
     @Enumerated(EnumType.STRING)

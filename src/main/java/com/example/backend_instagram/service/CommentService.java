@@ -29,10 +29,10 @@ public class CommentService {
     private final ObjectMapper objectMapper;
 
     public CommentService(CommentRepository commentRepository,
-                          PostRepository postRepository,
-                          UserService userService,
-                          NotificationService notificationService,
-                          SocketIOServer socketIOServer) {
+            PostRepository postRepository,
+            UserService userService,
+            NotificationService notificationService,
+            SocketIOServer socketIOServer) {
         this.commentRepository = commentRepository;
         this.postRepository = postRepository;
         this.userService = userService;
