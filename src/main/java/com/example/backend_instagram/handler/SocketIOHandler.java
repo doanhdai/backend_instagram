@@ -251,59 +251,59 @@ import org.springframework.stereotype.Component;
      );
 
      // Xử lý thông báo theo dõi người dùng
-     server.addEventListener("followNotification", Map.class, new DataListener<Map>() {
-        @Override
-        public void onData(SocketIOClient client, Map data, AckRequest ackSender) {
-            String fromUserId = (String) data.get("fromUserId");
-            String fromUserName = (String) data.get("fromUserName");
-            String toUserId = (String) data.get("toUserId");
-            String message = (String) data.get("message"); // Nội dung tùy chọn
-            String timestamp = (String) data.get("timestamp"); // client gửi thời gian
+       server.addEventListener("followNotification", Map.class, new DataListener<Map>() {
+           @Override
+           public void onData(SocketIOClient client, Map data, AckRequest ackSender) {
+               String fromUserId = (String) data.get("fromUserId");
+               String fromUserName = (String) data.get("fromUserName");
+               String toUserId = (String) data.get("toUserId");
+               String message = (String) data.get("message");
+               String timestamp = (String) data.get("timestamp");
 
-            System.out.println("📥 Follow event received:");
-            System.out.println(" - From: " + fromUserName + " (ID: " + fromUserId + ")");
-            System.out.println(" - To: " + toUserId);
-            System.out.println(" - Message: " + message);
-            System.out.println(" - Time: " + timestamp);
+               System.out.println("📥 Follow event received:");
+               System.out.println(" - From: " + fromUserName + " (ID: " + fromUserId + ")");
+               System.out.println(" - To: " + toUserId);
+               System.out.println(" - Message: " + message);
+               System.out.println(" - Time: " + timestamp);
 
-            SocketIOClient receiver = userSocketMap.get(toUserId);
-            if (receiver != null) {
-                Map<String, Object> notifyData = new HashMap<>();
-                notifyData.put("fromUserId", fromUserId);
-                notifyData.put("fromUserName", fromUserName);
-                notifyData.put("message", message);
-                notifyData.put("timestamp", timestamp);
+               SocketIOClient receiver = userSocketMap.get(toUserId);
+               if (receiver != null) {
+                   Map<String, Object> notifyData = new HashMap<>();
+                   notifyData.put("fromUserId", fromUserId);
+                   notifyData.put("fromUserName", fromUserName);
+                   notifyData.put("message", message);
+                   // Thêm sentAt vào notifyData
+                   LocalDateTime sentAt = LocalDateTime.now();
+                   notifyData.put("sentAt", sentAt.toString()); // Chuyển LocalDateTime thành String
 
-                User fromUser = new User();
-                fromUser.setId(Long.parseLong(fromUserId));
+                   User fromUser = new User();
+                   fromUser.setId(Long.parseLong(fromUserId));
 
-                User toUser = new User();
-                toUser.setId(Long.parseLong(toUserId));
+                   User toUser = new User();
+                   toUser.setId(Long.parseLong(toUserId));
 
-                Post post = new Post();
+                   Post post = new Post();
+                   post.setId(11L); // Có thể cần điều chỉnh ID bài post
 
-                // Có thể chỉnh sửa id bài post cho tương thích với lap
-                post.setId(11L);
+                   Notification notification = new Notification();
+                   notification.setUser(toUser);
+                   notification.setActor(fromUser);
+                   notification.setPost(post);
+                   notification.setType(NotificationType.FOLLOW);
+                   notification.setMessage(message);
+                   notification.setSentAt(sentAt); // Lưu sentAt vào Notification
+                   notification.setRead(false);
 
-                Notification notification = new Notification();
-                notification.setUser(toUser); // Người nhận thông báo
-                notification.setActor(fromUser);   // Người thực hiện hành động
-                notification.setPost(post);   // Không liên quan đến post
-                notification.setType(NotificationType.FOLLOW);
-                notification.setMessage(message);
-                notification.setSentAt(LocalDateTime.now());
-                notification.setRead(false);
+                   notificationRepository.save(notification);
 
-                notificationRepository.save(notification);
+                   receiver.sendEvent("receiveFollowNotification", notifyData);
 
-                receiver.sendEvent("receiveFollowNotification", notifyData);
-
-                System.out.println("✅ Follow notification sent to " + toUserId);
-            } else {
-                System.out.println("❌ User " + toUserId + " is not connected.");
-            }
-        }
-     });
+                   System.out.println("✅ Follow notification sent to " + toUserId);
+               } else {
+                   System.out.println("❌ User " + toUserId + " is not connected.");
+               }
+           }
+       });
      System.out.println("🚀 Socket.IO Handler started!");
   }
 
