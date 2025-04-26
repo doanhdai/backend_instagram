@@ -57,4 +57,16 @@ public class NotificationController {
         notificationService.markAsRead(notificationId);
         return ResponseEntity.ok().build();
     }
+    
+    @PostMapping("/mark-read")
+    public ResponseEntity<Void> markAllNotificationsAsRead(@RequestParam Long userId) {
+        try {
+            notificationService.markAllNotificationsAsRead(userId);
+            return ResponseEntity.ok().build();
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
 }
+
+
