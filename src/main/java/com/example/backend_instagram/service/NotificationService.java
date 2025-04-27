@@ -16,6 +16,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -136,6 +137,37 @@ public class NotificationService {
         }
     }
 
+    public void markAllNotificationsAsRead(Long userId) {
+        try {
+            User user = userService.fetchUserById(userId);
+            if (user == null) {
+                throw new IllegalArgumentException("User not found");
+            }
+
+            List<Notification> unreadNotifications = notificationRepository
+                    .findByUserAndIsReadFalseOrderBySentAtDesc(user);
+            if (!unreadNotifications.isEmpty()) {
+                unreadNotifications.forEach(notification -> notification.setRead(true));
+                notificationRepository.saveAll(unreadNotifications);
+                logger.info("Marked {} notifications as read for user: {}", unreadNotifications.size(), userId);
+
+                // Gửi sự kiện qua Socket.IO để thông báo frontend
+                SocketIOClient client = socketIOHandler.getUserSocketMap().get(userId.toString());
+                if (client != null && client.isChannelOpen()) {
+                    client.sendEvent("notifications_read",
+                            Map.of("userId", userId, "message", "All notifications marked as read"));
+                    logger.info("Sent notifications_read event to user: {}", userId);
+                } else {
+                    logger.warn("Client not found or not connected for userId: {}", userId);
+                }
+            } else {
+                logger.debug("No unread notifications found for user: {}", userId);
+            }
+        } catch (Exception e) {
+            logger.error("Error marking notifications as read for user {}: {}", userId, e.getMessage(), e);
+            throw new RuntimeException("Failed to mark notifications as read", e);
+        }
+    }
     private void broadcastLikeUpdate(Long postId, Integer likesCount, String message, String userNickname,
             String userImage) {
         socketIOServer.getBroadcastOperations()
