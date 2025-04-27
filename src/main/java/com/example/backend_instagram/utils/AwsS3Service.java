@@ -37,18 +37,42 @@ public class AwsS3Service {
     }
     public String uploadFile(String fileName, byte[] fileData) {
         try {
+            String contentType = determineContentType(fileName);
+            
             PutObjectRequest request = PutObjectRequest.builder()
                     .bucket(bucketName)
                     .key(fileName)
-                    .contentType("image/png")  
+                    .contentType(contentType)
                     .build();
 
             s3Client.putObject(request, RequestBody.fromBytes(fileData));
 
-    
             return "https://" + bucketName + ".s3." + region + ".amazonaws.com/" + fileName;
         } catch (Exception e) {
             throw new RuntimeException("Lỗi upload file lên S3: " + e.getMessage());
+        }
+    }
+
+    private String determineContentType(String fileName) {
+        String extension = fileName.substring(fileName.lastIndexOf(".") + 1).toLowerCase();
+        switch (extension) {
+            case "jpg":
+            case "jpeg":
+                return "image/jpeg";
+            case "png":
+                return "image/png";
+            case "gif":
+                return "image/gif";
+            case "mp4":
+                return "video/mp4";
+            case "mov":
+                return "video/quicktime";
+            case "avi":
+                return "video/x-msvideo";
+            case "webm":
+                return "video/webm";
+            default:
+                return "application/octet-stream";
         }
     }
 
