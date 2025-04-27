@@ -1,9 +1,11 @@
 package com.example.backend_instagram.service;
 
 import com.example.backend_instagram.dto.post.CreatePostRequest;
+import com.example.backend_instagram.entity.Follow;
 import com.example.backend_instagram.entity.Media;
 import com.example.backend_instagram.entity.Post;
 import com.example.backend_instagram.entity.User;
+import com.example.backend_instagram.repository.FollowRepository;
 import com.example.backend_instagram.repository.MediaRepository;
 import com.example.backend_instagram.repository.PostRepository;
 import com.example.backend_instagram.repository.UserRepository;
@@ -15,6 +17,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class PostService {
@@ -22,14 +25,17 @@ public class PostService {
     private final UserRepository userRepository;
     private final MediaRepository mediaRepository;
     private final AwsS3Service awsS3Service;
+    private final FollowRepository followRepository;
 
     public PostService(PostRepository postRepository,
             UserRepository userRepository,
             MediaRepository mediaRepository,
+            FollowRepository followRepository,
             AwsS3Service awsS3Service) {
         this.postRepository = postRepository;
         this.userRepository = userRepository;
         this.mediaRepository = mediaRepository;
+        this.followRepository = followRepository;
         this.awsS3Service = awsS3Service;
     }
 
@@ -80,7 +86,7 @@ public class PostService {
     public List<Post> getAllPosts() {
         return postRepository.findByStatus("True");
     }
-    
+
     public Post savePost(Post post) {
         return postRepository.save(post);
     }
@@ -146,23 +152,32 @@ public class PostService {
     public Post updatePostStatus(Long postId, String status) {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new RuntimeException("Post not found"));
-        
+
         if (status == null) {
             throw new IllegalArgumentException("Status parameter is required");
         }
-        
+
         // Clean up the status value
         String normalizedStatus = status.trim().toLowerCase();
         // Remove any commas and whitespace
         normalizedStatus = normalizedStatus.replaceAll("[, ]", "");
-        
+
         if (!normalizedStatus.equals("true") && !normalizedStatus.equals("false") && !normalizedStatus.equals("1")) {
             throw new IllegalArgumentException("Status must be either 'true', 'false' or '1'");
         }
-        
+
         // Convert status to proper format
         String finalStatus = normalizedStatus.equals("true") || normalizedStatus.equals("1") ? "True" : "false";
         post.setStatus(finalStatus);
         return postRepository.save(post);
+    }
+
+    public List<Post> getPostsFromFollowing(Long userId) {
+        // Lấy danh sách người dùng mà userId đang theo dõi
+        List<Follow> following = followRepository.findByFollowerId(userId);
+        List<Long> followingIds = following.stream()
+                .map(follow -> follow.getFollowing().getId())
+                .collect(Collectors.toList());
+        return postRepository.findByUserIdInAndStatusAndAccess(followingIds, "True", "PUBLIC");
     }
 }

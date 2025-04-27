@@ -11,9 +11,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.Map;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.PathVariable;
 
 
 @RestController
@@ -110,5 +107,11 @@ public class PostController {
     public ResponseEntity<Post> UpdateStatusAdmin(  @RequestBody Post post) {
     Post post1 = postService.updatePostStatus(post.getId(),post.getStatus());
     return ResponseEntity.ok(post1);
+    }
+
+    @GetMapping("/following/{userId}")
+    public ResponseEntity<List<Post>> getPostsFromFollowing(@PathVariable Long userId) {
+        List<Post> posts = postService.getPostsFromFollowing(userId);
+        return ResponseEntity.ok(posts);
     }
 }

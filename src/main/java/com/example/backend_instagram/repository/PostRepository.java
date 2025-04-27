@@ -12,4 +12,5 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     List<Post> findByStatus(String status);
     List<Post> findByUserId(Long userId);
     long countByUserId(Long userId);
+    List<Post> findByUserIdInAndStatusAndAccess(List<Long> userIds, String status, String access);
 }

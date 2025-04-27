@@ -43,4 +43,10 @@ public class StoryController {
         storyService.deleteStory(storyId);
         return ResponseEntity.ok().build();
     }
+
+    @GetMapping("/following/{userId}")
+    public ResponseEntity<List<Story>> getStoriesFromFollowing(@PathVariable Long userId) {
+        List<Story> stories = storyService.getStoriesFromFollowing(userId);
+        return ResponseEntity.ok(stories);
+    }
 }

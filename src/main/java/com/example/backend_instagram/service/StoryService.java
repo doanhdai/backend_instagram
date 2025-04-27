@@ -1,7 +1,9 @@
 package com.example.backend_instagram.service;
 
+import com.example.backend_instagram.entity.Follow;
 import com.example.backend_instagram.entity.Story;
 import com.example.backend_instagram.entity.User;
+import com.example.backend_instagram.repository.FollowRepository;
 import com.example.backend_instagram.repository.StoryRepository;
 import com.example.backend_instagram.repository.UserRepository;
 import com.example.backend_instagram.utils.AwsS3Service;
@@ -14,6 +16,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class StoryService {
@@ -25,6 +28,9 @@ public class StoryService {
 
     @Autowired
     private AwsS3Service awsS3Service;
+
+    @Autowired
+    private FollowRepository followRepository;
 
     @Transactional
     public Story createStory(Long userId, MultipartFile file, String access, Integer status) {
@@ -91,4 +97,18 @@ public class StoryService {
     //         storyRepository.save(story);
     //     }
     // }
+    public List<Story> getStoriesFromFollowing(Long userId) {
+        // Lấy danh sách người dùng mà userId đang follow
+        List<Follow> following = followRepository.findByFollowerId(userId);
+        List<Long> followingIds = following.stream()
+                .map(follow -> follow.getFollowing().getId())
+                .collect(Collectors.toList());
+
+        // Lấy thời gian 24 giờ trước
+        LocalDateTime twentyFourHoursAgo = LocalDateTime.now().minusHours(24);
+
+        // Sử dụng phương thức mới từ repository
+        return storyRepository.findByUserIdInAndAccessAndStatusAndCreatedAtAfter(
+                followingIds, "PUBLIC", 1, twentyFourHoursAgo);
+    }
 }
