@@ -283,10 +283,10 @@ import org.springframework.stereotype.Component;
                    toUser.setId(Long.parseLong(toUserId));
 
                    Post post = new Post();
-                   post.setId(11L); // Có thể cần điều chỉnh ID bài post
+                 
 
                 // Có thể chỉnh sửa id bài post cho tương thích với lap
-                post.setId(4L);
+                   post.setId(6L);
                    Notification notification = new Notification();
                    notification.setUser(toUser);
                    notification.setActor(fromUser);
