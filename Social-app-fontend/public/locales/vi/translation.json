@@ -1,0 +1,176 @@
+{
+  "LargeNav": {
+    "home": "Trang chủ",
+    "search": "Tìm kiếm",
+    "messages": "Tin nhắn",
+    "notifications": "Thông báo",
+    "create": "Tạo",
+    "more": "Xem thêm"
+  },
+  "menu": {
+    "setting": "Cài đặt"
+  },
+
+  "fromCreate": {
+    "title": "Chỉnh sửa trang cá nhân",
+    "name": "Tên người dùng",
+    "phone": "Số điện thoại",
+    "date": "Ngày sinh",
+    "gender": "Giới tính",
+    "avata": "Ảnh đại diện",
+    "bio": "Tiểu sử",
+    "update": "Cập nhật"
+  },
+
+  "manageUser": {
+    "editUser": "Chỉnh sửa người dùng",
+    "addUser": "Thêm người dùng",
+    "userName": "Tên Người Dùng",
+    "fullName": "Họ và tên",
+    "enterFullName": "Nhập họ và tên",
+    "enterName": "Nhập tên",
+    "phoneNumber": "Số điện thoại",
+    "enterPhone": "Nhập số điện thoại",
+    "birthDate": "Ngày sinh",
+    "gender": "Giới tính",
+    "male": "Nam",
+    "female": "Nữ",
+    "chooseAvatar": "Chọn ảnh đại diện",
+    "description": "Mô tả",
+    "enterDescription": "Nhập mô tả",
+    "cancel": "Hủy",
+    "saveChanges": "Lưu thay đổi",
+    "pass": "Mật khẩu",
+    "confirmPass": "Xác nhận mật khẩu",
+    "addUserSuccess": "Thêm người dùng thành công",
+    "addUserError": "Thêm người dùng thất bại",
+    "enterPass": "Nhập mật khẩu",
+    "email": "Email",
+    "enterEmail": "Nhập email",
+    "enterConfirmPass": "Nhập xác nhận mật khẩu"
+  },
+  "validation": {
+    "nameRequired": "Tên người dùng không được để trống",
+    "phoneRequired": "Số điện thoại không được bỏ trống",
+    "phoneNumbersOnly": "Số điện thoại chỉ chứa chữ số",
+    "phoneMinLength": "Số điện thoại phải có ít nhất 10 số",
+    "phoneMaxLength": "Số điện thoại không vượt quá 11 số",
+    "birthDateRequired": "Vui lòng chọn ngày sinh",
+    "genderRequired": "Vui lòng chọn giới tính"
+  },
+  "sidebar": {
+    "adminTitle": "Quản Trị Instagram",
+    "manageUsers": "Quản Lý Người Dùng",
+    "managePosts": "Quản Lý Bài Viết",
+    "logout": "Đăng Xuất",
+    "welcome": "Chào mừng bạn tới hệ thống instagram",
+    "logoutSuccess": "Đăng xuất thành công!",
+    "logoutError": "Đăng xuất thất bại, vui lòng thử lại.",
+    "logoutSystemError": "Có lỗi xảy ra khi đăng xuất."
+  },
+
+  "managerUser": {
+    "title": "Quản Lý Người Dùng",
+    "addUser": "Thêm người dùng +",
+    "label": "Tìm kiếm",
+    "placeholder": "Tìm kiếm mục",
+    "userName": "Tên Người Dùng",
+    "nickName": "Nick Name",
+    "birthday": "Ngày Sinh",
+    "status": "Trạng Thái",
+    "actions": "Hành Động",
+    "online": "Trực tuyến",
+    "offline": "Ngoại tuyến",
+    "adduser": "Thêm người dùng"
+  },
+  "messenger": {
+    "back": "Quay lại",
+    "conversation": "Cuộc trò chuyện",
+    "conversations": "Cuộc trò chuyện",
+    "conversationStart": "Bắt đầu trò chuyện vào",
+    "createGroup": "Tạo nhóm",
+    "createGroupChat": "Tạo nhóm chat mới",
+    "createNewGroup": "Tạo nhóm chat mới",
+    "enterGroupName": "Nhập tên nhóm",
+    "findConversations": "Tìm cuộc trò chuyện",
+    "friends": "Bạn bè",
+    "groupChat": "Trò chuyện nhóm",
+    "members": "thành viên",
+    "needMoreUsers": "cần thêm người",
+    "newConversation": "Cuộc trò chuyện mới",
+    "noChatYetButFriend": "Người dùng phù hợp với tìm kiếm",
+    "noConversations": "Bạn chưa có cuộc trò chuyện nào",
+    "noMessages": "Chưa có tin nhắn",
+    "noResultsFound": "Không tìm thấy kết quả",
+    "noUsers": "Không có người dùng nào",
+    "noUsersFound": "Không tìm thấy người dùng nào",
+    "searchConversations": "Tìm kiếm cuộc trò chuyện...",
+    "searchConversationsOrFriends": "Tìm kiếm cuộc trò chuyện hoặc bạn bè...",
+    "searchFriends": "Tìm kiếm bạn bè",
+    "searchUsers": "Tìm kiếm người dùng...",
+    "seen": "Đã xem",
+    "selectConversation": "Chọn một cuộc trò chuyện",
+    "selectMinTwoUsers": "Chọn ít nhất 2 bạn bè",
+    "send": "Gửi",
+    "sendFirstMessage": "Gửi tin nhắn đầu tiên",
+    "selected": "đã chọn",
+    "startChat": "Bắt đầu cuộc trò chuyện",
+    "startConversation": "Hãy bắt đầu cuộc trò chuyện",
+    "startNewConversation": "Hoặc bắt đầu cuộc trò chuyện mới",
+    "title": "Tin nhắn",
+    "typeMessage": "Nhập tin nhắn...",
+    "untitled": "Chưa đặt tên",
+    "welcomeToChat": "Chào mừng đến với tin nhắn",
+    "you": "Bạn"
+  },
+  "moreMenu": {
+    "activity": "Hoạt động của bạn",
+    "report": "Báo cáo sự cố",
+    "switchAccount": "Chuyển tài khoản",
+    "logout": "Đăng xuất"
+  },
+  "userProfile": {
+    "editProfile": "Chỉnh sửa trang cá nhân",
+    "editProfileSuccess": "Chỉnh sửa trang cá nhân thành công",
+    "editProfileError": "Chỉnh sửa trang cá nhân thất bại",
+    "posts": "Bài viết",
+    "tagged": "Được gắn thẻ",
+    "storyHighlights": "Tin nổi bật",
+    "followers": "Người theo dõi",
+    "following": "Đang theo dõi"
+  },
+  "RecommentUser": {
+    "title": "Người dùng được đề xuất",
+    "followers": "Người theo dõi",
+    "seeAll": "Xem tất cả",
+    "suggestedForYou": "Đề xuất cho bạn",
+    "follow": "Theo dõi"
+  },
+  "CreateNew": {
+    "title": "Tạo mới",
+    "createNewsfeed": "Tạo bài viết",
+    "createStory": "Tạo tin nổi bật",
+    "cancel": "Hủy",
+    "tellMeWhatYouThink": "Đăng bài viết",
+    "howDoYouFeelToday": "Tạo tin nổi bật",
+    "caption": "Chú thích",
+    "image": "Hình ảnh",
+    "loading": "Đang đăng...",
+    "create": "Đăng bài",
+    "createPost": "Tạo bài viết"
+  },
+  "search": {
+    "title": "Tìm kiếm",
+    "placeholder": "Tìm kiếm mục",
+    "searchPeople": "Nhập tên người dùng"
+  },
+  "newFed": {
+    "phut": "Phút trước",
+    "Gio": "Giờ trước",
+    "public": "Công khai",
+    "private": "Chỉ mình tôi",
+    "like": "lượt thích",
+    "view": "Xem tất cả",
+    "comment": "bình luận"
+  }
+}
