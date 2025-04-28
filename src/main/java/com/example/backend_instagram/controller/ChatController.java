@@ -2,6 +2,7 @@ package com.example.backend_instagram.controller;
 
 import com.example.backend_instagram.dto.message.ConversationDTO;
 import com.example.backend_instagram.dto.message.MessageResponseDTO;
+import com.example.backend_instagram.dto.user.UserStatsDTO;
 import com.example.backend_instagram.entity.Conversation;
 import com.example.backend_instagram.entity.User;
 import com.example.backend_instagram.service.ChatService;
@@ -123,19 +124,73 @@ public class ChatController {
         return ResponseEntity.ok(group);
     }
 
-    @PostMapping("/group/{conversationId}/add")
-    @ApiMessage("Thêm member mới thành công")
-    public ResponseEntity<?> addUserToGroup(@PathVariable Long conversationId, @RequestParam Long userId)
-            throws IdInvalidException {
-        chatService.addUserToGroup(conversationId, userId);
+    @PutMapping("/conversation/{conversationId}/name")
+    @ApiMessage("Cập nhật tên cuộc trò chuyện thành công")
+    public ResponseEntity<ConversationDTO> updateConversationName(
+            @PathVariable Long conversationId,
+            @RequestBody Map<String, String> payload,
+            @RequestParam Long userId) throws IdInvalidException {
+        
+        String newName = payload.get("name");
+        if (newName == null || newName.trim().isEmpty()) {
+            throw new IdInvalidException("Tên cuộc trò chuyện không được để trống");
+        }
+        
+        ConversationDTO updatedConversation = chatService.updateConversationName(conversationId, newName, userId);
+        return ResponseEntity.ok(updatedConversation);
+    }
+
+    @PostMapping("/conversation/{conversationId}/add-member") // có trùng không? 
+    @ApiMessage("Thêm thành viên vào nhóm thành công")
+    public ResponseEntity<ConversationDTO> addMemberToConversation(
+            @PathVariable Long conversationId,
+            @RequestBody Map<String, Long> payload) throws IdInvalidException {
+        
+        Long userId = payload.get("userId"); // ID người được thêm vào
+        Long addedByUserId = payload.get("addedByUserId"); // ID người thêm
+        
+        if (userId == null || addedByUserId == null) {
+            throw new IdInvalidException("Thiếu thông tin userId hoặc addedByUserId");
+        }
+        
+        ConversationDTO updatedConversation = chatService.addMemberToConversation(conversationId, userId, addedByUserId);
+        return ResponseEntity.ok(updatedConversation);
+    }
+
+    @DeleteMapping("/conversation/{conversationId}/participant/{userId}")
+    @ApiMessage("Đã xóa thành viên khỏi nhóm")
+    public ResponseEntity<ConversationDTO> removeParticipant(
+            @PathVariable Long conversationId,
+            @PathVariable Long userId,
+            @RequestParam Long removerId) throws IdInvalidException {
+        
+        ConversationDTO updatedConversation = chatService.removeParticipant(conversationId, userId, removerId);
+        return ResponseEntity.ok(updatedConversation);
+    }
+
+    @DeleteMapping("/conversation/{conversationId}/leave/{userId}")
+    @ApiMessage("Đã rời khỏi nhóm")
+    public ResponseEntity<Object> leaveConversation(
+            @PathVariable Long conversationId,
+            @PathVariable Long userId) throws IdInvalidException {
+        
+        chatService.leaveConversation(conversationId, userId);
         return ResponseEntity.ok().build();
     }
 
-    @DeleteMapping("/group/{conversationId}/remove")
-    @ApiMessage("Xóa member thành công")
-    public ResponseEntity<?> removeUserFromGroup(@PathVariable Long conversationId, @RequestParam Long userId)
-            throws IdInvalidException {
-        chatService.removeUserFromGroup(conversationId, userId);
-        return ResponseEntity.ok().build();
+    @GetMapping("/block-status")
+    public ResponseEntity<Map<String, Boolean>> getBlockStatus(
+            @RequestParam Long userId,
+            @RequestParam Long otherUserId) {
+        
+        boolean isBlocked = chatService.checkBlockStatus(userId, otherUserId);
+        Map<String, Boolean> result = Map.of("isBlocked", isBlocked);
+        return ResponseEntity.ok(result);
+    }
+
+    @GetMapping("/conversation/{conversationId}/owner")
+    public ResponseEntity<UserStatsDTO> getConversationOwner(@PathVariable Long conversationId) throws IdInvalidException {
+        UserStatsDTO owner = chatService.getConversationOwner(conversationId);
+        return ResponseEntity.ok(owner);
     }
 }

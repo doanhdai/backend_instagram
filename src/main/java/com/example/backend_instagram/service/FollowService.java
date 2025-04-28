@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import org.springframework.transaction.annotation.Transactional; // code của tao Hào sục chéo
 
 @Service
 public class FollowService {
@@ -95,6 +96,49 @@ public class FollowService {
 
     public Long countFollowingOfUser(Long userId) {
         return followRepository.countByFollowerId(userId);
+    }
+
+    // code bên dưới là của tao Hào sục chéo
+    /**
+     * @param blocker Người chặn
+     * @param blocked Người bị chặn
+     */
+    @Transactional
+    public void blockUser(User blocker, User blocked) {
+        // Kiểm tra xem đã có mối quan hệ follow chưa
+        Optional<Follow> existingFollow = followRepository.findByFollowerAndFollowing(blocker, blocked);
+        
+        if (existingFollow.isPresent()) {
+            Follow follow = existingFollow.get();
+            follow.setBlocking(true);
+            followRepository.save(follow);
+        } else {
+            Follow follow = new Follow();
+            follow.setFollower(blocker);
+            follow.setFollowing(blocked);
+            follow.setBlocking(true);
+            // follow.setFriend(false); // có đúng không nhỉ?
+            followRepository.save(follow);
+        }
+    }
+
+    /**
+     * @param unblocker Người bỏ chặn
+     * @param unblocked Người được bỏ chặn
+     */
+    @Transactional
+    public void unblockUser(User unblocker, User unblocked) {
+        Optional<Follow> existingFollow = followRepository.findByFollowerAndFollowing(unblocker, unblocked);
+        
+        if (existingFollow.isPresent()) {
+            Follow follow = existingFollow.get();
+            follow.setBlocking(false);
+            followRepository.save(follow);
+        }
+    }
+
+    public Optional<Follow> getFollowByFollowerAndFollowing(User follower, User following) {
+        return followRepository.findByFollowerAndFollowing(follower, following);
     }
 
 }
