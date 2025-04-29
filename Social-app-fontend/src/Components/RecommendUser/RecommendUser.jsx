@@ -17,6 +17,7 @@ const RecommendUser = () => {
   const userApp = useSelector((state) => state.login);
   const { sendFollowNotification } = useWebSocket();
   const [t] = useTranslation();
+  const defaultAvatar = "https://via.placeholder.com/40?text=User";
   const handleAddFollow = async (followedId) => {
     try {
       const response = await handlePostFollower(
@@ -68,7 +69,7 @@ const RecommendUser = () => {
 
     fetchData();
   }, [userApp.userInfo.id]);
-
+  console.log(userList);
   return (
     <div className="lg:w-[20vw] w-full h-[80vh] p-3 mt-5 bg-black shadow-md border border-gray-800 rounded-md">
       <p className="text-white font-semibold mb-2">
@@ -148,7 +149,11 @@ const RecommendUser = () => {
             >
               <div className="flex items-center gap-x-4">
                 <img
-                  src={item.userImage}
+                  src={
+                    item.userImage === null
+                      ? "https://byvn.net/Eq9z"
+                      : item.userImage
+                  }
                   alt={item.userNickname}
                   className="w-8 h-8 rounded-full object-cover"
                   style={{ imageRendering: "crisp-edges" }}

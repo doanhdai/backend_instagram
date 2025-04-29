@@ -194,8 +194,7 @@ class NotificationSocket {
       let follow;
       try {
         const jsonData = Array.isArray(data) ? data[0] : data;
-        follow =
-          typeof jsonData === "string" ? JSON.parse(jsonData) : jsonData;
+        follow = typeof jsonData === "string" ? JSON.parse(jsonData) : jsonData;
         console.log("Parsed follow:", follow);
         if (typeof callback === "function") {
           callback(follow);
@@ -233,4 +232,3 @@ class NotificationSocket {
 
 const notificationSocket = new NotificationSocket();
 export default notificationSocket;
-  

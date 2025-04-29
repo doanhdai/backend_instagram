@@ -58,7 +58,11 @@ const UserProfile = () => {
         <div className="w-40 h-40 rounded-full p-[2px] bg-gradient-to-tr from-yellow-400 via-pink-500 to-purple-600">
           <div className="w-full h-full rounded-full bg-black p-[2px]">
             <img
-              src={dataUser.avatar}
+              src={
+                dataUser.avatar === null
+                  ? "https://byvn.net/Eq9z"
+                  : dataUser.avatar
+              }
               alt="Avatar"
               className="w-full h-full rounded-full object-cover"
               style={{ imageRendering: "crisp-edges" }}
@@ -151,12 +155,27 @@ const UserProfile = () => {
                 setIsOpen(true);
               }}
             >
-              <img
+              {mediaItem.type === "VIDEO" ? (
+                <video
+                  src={mediaItem.url}
+                  className="w-full h-full object-contain"
+                  controls
+                  autoPlay
+                  loop
+                />
+              ) : (
+                <img
+                  src={mediaItem.url || "https://via.placeholder.com/150"}
+                  className="w-full h-full object-contain"
+                  alt="Post"
+                />
+              )}
+              {/* <img
                 src={mediaItem.url}
                 alt="Post"
                 className="w-full h-full object-cover"
                 style={{ imageRendering: "crisp-edges" }}
-              />
+              /> */}
 
               {/* Overlay hiển thị khi hover */}
               <div className="absolute inset-0 bg-black bg-opacity-50 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity duration-300">
@@ -201,6 +220,7 @@ const UserProfile = () => {
         isOpen={showModal}
         onClose={() => setShowModal(false)}
         id={dataUser.userId}
+        fetchDataUser={fetchDataUser}
       />
       <ControllFlowering
         isOpening={showModalFlowering}

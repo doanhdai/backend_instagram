@@ -1,8 +1,19 @@
 import React, { useEffect, useState } from "react";
 import { handleGetAllFollower } from "../../../../Service/Folower";
+import { useSelector } from "react-redux";
+import { handlePostFollower } from "../../../../Service/UserAPI";
+import { useWebSocket } from "../../../../Utils/configCallVideo/websocket";
 
-export default function ControllFollower({ isOpen, onClose, id }) {
+export default function ControllFollower({
+  isOpen,
+  onClose,
+  id,
+  fetchDataUser,
+}) {
   const [dataFollower, setDataFollower] = useState([]);
+  const currentUser = useSelector((state) => state.login?.userInfo);
+  const { sendFollowNotification } = useWebSocket();
+
   useEffect(() => {
     if (isOpen) {
       fectDataFollower();
@@ -18,6 +29,35 @@ export default function ControllFollower({ isOpen, onClose, id }) {
     let res = await handleGetAllFollower(id);
     if (res.statusCode === 200 && res.data) {
       setDataFollower(res.data);
+      console.log(res.data);
+    }
+  };
+
+  const handleGetFollowersByUser = async (user) => {
+    console.log(user.id?.followerId, currentUser.id);
+    try {
+      const response = await handlePostFollower(
+        currentUser.id,
+        user.id?.followerId
+      );
+      if (response.statusCode === 201 || response.statusCode === 200) {
+        console.log("Đã follow thành công:", response.data);
+
+        // Gửi thông báo qua WebSocket
+        sendFollowNotification({ toUserId: String(user.id?.followerId) });
+
+        // Cập nhật state `dataFollower` để phản ánh thay đổi giao diện
+        const updatedFollowers = dataFollower.map((follower) => {
+          if (follower.id === user.id) {
+            return { ...follower, friend: true }; // Đánh dấu đã theo dõi
+          }
+          return follower;
+        });
+        setDataFollower(updatedFollowers);
+        fetchDataUser(); // Cập nhật lại state
+      }
+    } catch (error) {
+      console.log(error);
     }
   };
 
@@ -81,13 +121,22 @@ export default function ControllFollower({ isOpen, onClose, id }) {
                   </div>
                 </div>
                 <button
-                  className={`px-3 py-1 text-sm rounded font-medium ${
-                    user.isFollowing
-                      ? "bg-zinc-700 text-white cursor-default"
-                      : "bg-blue-500 text-white hover:bg-blue-600"
-                  }`}
+                  className={`
+                    px-3 py-1 text-sm rounded font-medium
+                    ${
+                      user.friend
+                        ? "bg-zinc-700 text-white cursor-default pointer-events-none"
+                        : "bg-blue-500 text-white hover:bg-blue-600"
+                    }
+                  `}
+                  onClick={
+                    user.friend
+                      ? undefined
+                      : () => handleGetFollowersByUser(user)
+                  }
+                  disabled={user.friend}
                 >
-                  {user.isFollowing ? "Đang theo dõi" : "Theo dõi lại "}
+                  {user.friend ? "Đang theo dõi" : "Theo dõi lại"}
                 </button>
               </div>
             ))}

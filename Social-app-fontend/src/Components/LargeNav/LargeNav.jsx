@@ -54,12 +54,6 @@ const LargeNav = () => {
       }
     });
 
-    notificationSocket.subscribeToFollow((data) => {
-      if (data.userId != userInfo.id) {
-        setHasUnreadNotifications(true);
-      }
-    });
-      
     return () => {
       notificationSocket.disconnect();
     };

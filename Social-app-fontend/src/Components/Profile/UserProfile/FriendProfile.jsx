@@ -48,7 +48,11 @@ const FriendProfile = () => {
       <div className="flex items-center space-x-6">
         <div className="relative">
           <img
-            src={dataUser.avatar}
+            src={
+              dataUser.avatar === null
+                ? "https://byvn.net/Eq9z"
+                : dataUser.avatar
+            }
             alt="Avatar"
             className="w-24 h-24 rounded-full border-4 border-gradient-to-tr from-yellow-400 via-pink-500 to-purple-600"
           />
@@ -56,9 +60,6 @@ const FriendProfile = () => {
         <div>
           <div className="flex items-center space-x-4">
             <h2 className="text-xl font-semibold">{dataUser.username}</h2>
-            <button className="bg-blue-500 px-4 py-1 rounded text-white text-sm">
-              Theo dõi
-            </button>
           </div>
           <div className="flex space-x-6 mt-2 text-sm">
             <span>
