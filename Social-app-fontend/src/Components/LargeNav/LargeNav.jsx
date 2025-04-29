@@ -54,12 +54,6 @@ const LargeNav = () => {
       }
     });
 
-    notificationSocket.subscribeToFollow((data) => {
-      if (data.userId != userInfo.id) {
-        setHasUnreadNotifications(true);
-      }
-    });
-      
     return () => {
       notificationSocket.disconnect();
     };
@@ -176,7 +170,7 @@ const LargeNav = () => {
           })}
 
           {/* Search panel */}
-          {openSearch && <SearchPanel onClose={() => setOpenSearch(false)} />}
+          {openSearch && <SearchPanel isOpen= {true} onClose={() => setOpenSearch(false)} />}
 
           {/* Nút mở Modal Tạo Post và Story */}
           <button
