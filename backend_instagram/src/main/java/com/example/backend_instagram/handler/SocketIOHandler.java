@@ -279,7 +279,7 @@ public class SocketIOHandler {
             toUser.setId(Long.parseLong(toUserId));
 
             Post post = new Post();
-            post.setId(6L); // ID bài post mặc định hoặc lấy từ data nếu muốn
+            post.setId(11L); // ID bài post mặc định hoặc lấy từ data nếu muốn
 
             // Tạo Notification
             Notification notification = new Notification();
