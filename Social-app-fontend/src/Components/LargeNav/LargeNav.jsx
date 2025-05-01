@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useSelector, useDispatch } from "react-redux";
@@ -39,9 +39,19 @@ const LargeNav = () => {
     // Khởi tạo WebSocket
     notificationSocket.init(dispatch, userInfo.id);
 
-    notificationSocket.subscribeToLikeUpdates((likeData) => {
-      console.log("New like received:", likeData);
-      if (likeData.userId != userInfo.id) {
+    notificationSocket.subscribeToNotifications((notificationData) => {
+      console.log("New notification received:", notificationData);
+      // Hiển thị dấu chấm đỏ nếu người dùng hiện tại là receiver
+      if (notificationData.userId === userInfo.id) {
+        setHasUnreadNotifications(true);
+      } else {
+        console.log("Ignoring notification:", notificationData);
+      }
+    });
+
+    notificationSocket.subscribeToLikeUpdates((notification) => {
+      console.log("New like received:", notification.receiverId);
+      if (Number(notification.receiverId) === Number(userInfo.id)) {
         setHasUnreadNotifications(true);
       }
     });
@@ -59,48 +69,35 @@ const LargeNav = () => {
         setHasUnreadNotifications(true);
       }
     });
-      
+
     return () => {
       notificationSocket.disconnect();
     };
   }, [userInfo?.id, dispatch]);
 
-  const sidebarItems = [
-    { name: t("LargeNav.home"), link: Route.default_session, icon: HomeLogo },
-    { name: t("LargeNav.search"), link: Route.search, icon: SearchLogo },
-    { name: t("LargeNav.messages"), link: Route.chat, icon: MessagesLogo },
-    {
-      name: t("LargeNav.notifications"),
-      link: Route.notification,
-      icon: NotificationsLogo,
-      hasBadge: hasUnreadNotifications, // Hiển thị dấu chấm đỏ
-    },
-  ];
+  const sidebarItems = useMemo(
+    () => [
+      { name: t("LargeNav.home"), link: Route.default_session, icon: HomeLogo },
+      { name: t("LargeNav.search"), link: Route.search, icon: SearchLogo },
+      { name: t("LargeNav.messages"), link: Route.chat, icon: MessagesLogo },
+      {
+        name: t("LargeNav.notifications"),
+        link: Route.notification,
+        icon: NotificationsLogo,
+        hasBadge: hasUnreadNotifications,
+      },
+    ],
+    [t, hasUnreadNotifications]
+  );
 
   const handleShowMenu = () => {
     setShowMenu((prev) => !prev);
   };
 
-  useEffect(() => {
-    const fetchUnreadNotifications = async () => {
-      try {
-        const data = await fetchAllNotificationsUnread(userInfo.id);
-        setUnreadNotifications(data.data);
-        console.log("Dữ liệu thông báo chưa đọc:", data.data);
-      } catch (error) {
-        console.error("Lỗi khi lấy thông báo:", error);
-      } finally {
-        console.error("Lỗi khi lấy thông báo:");
-      }
-    };
-
-    fetchUnreadNotifications();
-  }, [userInfo.id]);
   // Xử lý khi nhấp vào Notifications để tắt dấu chấm đỏ
   const handleNotificationsClick = async () => {
     setHasUnreadNotifications(false);
     try {
-      await setHasUnread(userInfo.id);
       console.log("Marked all notifications as read for user:", userInfo.id);
     } catch (error) {
       console.error("Error marking notifications as read:", error);

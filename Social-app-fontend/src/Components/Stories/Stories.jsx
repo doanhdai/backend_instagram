@@ -15,6 +15,7 @@ const Stories = () => {
   const fetchStories = async () => {
     const response = await getStoryByFollowing(userInfo.id);
     setStories(response.data);
+    console.log("response", response);
   };
 
   useEffect(() => {
