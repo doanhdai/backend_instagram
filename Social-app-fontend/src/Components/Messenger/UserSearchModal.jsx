@@ -2,21 +2,42 @@ import React, { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import instance from "../../Utils/AxiosApi/Axios";
 
-const UserSearchModal = ({ isOpen, onClose, onCreateGroup, currentUserId }) => {
+// Update props to add support for adding members
+const UserSearchModal = ({ 
+  isOpen, 
+  onClose, 
+  onSelectUser, 
+  onCreateGroup,
+  onSelectUsers, // New prop for selecting multiple users
+  currentUserId,
+  isForAddingMembers = false, // New prop to indicate if this is for adding members
+  excludeUserIds = [] // New prop to exclude certain users from the list
+}) => {
   const { t } = useTranslation();
   const [users, setUsers] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(false);
   const [selectedUsers, setSelectedUsers] = useState([]);
   const [groupName, setGroupName] = useState("");
+  const [fetchAttempted, setFetchAttempted] = useState(false); // Thêm trạng thái để theo dõi việc đã fetch chưa
 
+  // Sửa useEffect để tránh gọi liên tục
   useEffect(() => {
-    if (isOpen) {
+    // Chỉ fetch dữ liệu khi modal được mở và chưa fetch trước đó
+    if (isOpen && !fetchAttempted) {
       fetchFriends();
+      setFetchAttempted(true); // Đánh dấu đã fetch
     }
-  }, [isOpen]);
+
+    // Khi modal đóng, reset trạng thái fetchAttempted để lần sau mở lại sẽ fetch mới
+    if (!isOpen) {
+      setFetchAttempted(false);
+    }
+  }, [isOpen, fetchAttempted]);
 
   const fetchFriends = async () => {
+    if (!currentUserId) return; // Thêm kiểm tra để tránh gọi API khi không có currentUserId
+    
     setLoading(true);
     try {
       // 1. Lấy danh sách người mà user đang theo dõi
@@ -37,8 +58,13 @@ const UserSearchModal = ({ isOpen, onClose, onCreateGroup, currentUserId }) => {
         ...conversationUsers.map(user => user.id)
       ]);
       
-      // 4. Lấy thông tin chi tiết của tất cả user
-      const uniqueUsers = Array.from(allUserIds).map(id => {
+      // 4. Loại bỏ các user đã được exclude
+      const filteredUserIds = Array.from(allUserIds).filter(id => 
+        !excludeUserIds.includes(id)
+      );
+      
+      // 5. Lấy thông tin chi tiết của tất cả user
+      const uniqueUsers = filteredUserIds.map(id => {
         // Tìm trong friends trước
         const friend = friends.find(f => f.id === id);
         if (friend) return friend;
@@ -56,9 +82,19 @@ const UserSearchModal = ({ isOpen, onClose, onCreateGroup, currentUserId }) => {
       if (e.response) {
         console.error(`API error: ${e.response.status} - ${e.response.statusText}`);
       }
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
+
+  // Reset state khi đóng modal
+  useEffect(() => {
+    if (!isOpen) {
+      setSelectedUsers([]);
+      setGroupName("");
+      setSearchTerm("");
+    }
+  }, [isOpen]);
 
   const toggleUser = (userId) => {
     setSelectedUsers((prev) =>
@@ -77,41 +113,48 @@ const UserSearchModal = ({ isOpen, onClose, onCreateGroup, currentUserId }) => {
     }
   };
 
+  const handleAddMembers = () => {
+    if (selectedUsers.length > 0) {
+      onSelectUsers(selectedUsers);
+    }
+  };
+
   const filteredUsers = users.filter(
     (user) =>
-      user.userFullname.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.userNickname.toLowerCase().includes(searchTerm.toLowerCase())
+      user.userFullname?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.userNickname?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg w-full max-w-md">
-        <div className="flex justify-between items-center p-4 border-b">
-          <h2 className="text-lg font-semibold">
-            {t("messenger.newConversation")}
+    <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 z-50">
+      <div className="bg-gray-900 rounded-lg w-full max-w-md">
+        <div className="p-4 border-b border-gray-800">
+          <h2 className="text-lg font-semibold text-white">
+            {isForAddingMembers 
+              ? t("messenger.addMembers") 
+              : t("messenger.newConversation")
+            }
           </h2>
-          <button
-            onClick={onClose}
-            className="text-gray-500 hover:text-gray-700"
-          >
-            ✖
-          </button>
         </div>
-
+        
         <div className="p-4">
-          <h3 className="font-bold text-lg mb-4">{t("messenger.createGroupChat")}</h3>
-          <input
-            type="text"
-            value={groupName}
-            onChange={(e) => setGroupName(e.target.value)}
-            placeholder={t("messenger.enterGroupName")}
-            className="w-full p-2 border rounded mb-4"
-          />
+          {!isForAddingMembers && (
+            <input
+              type="text"
+              value={groupName}
+              onChange={(e) => setGroupName(e.target.value)}
+              placeholder={t("messenger.groupName")}
+              className="w-full p-2 border rounded mb-4 bg-gray-800 text-white border-gray-700"
+            />
+          )}
           
-          <p className="text-sm text-gray-600 mb-2">
-            {t("messenger.selectMinTwoUsers")}
+          <p className="text-sm text-gray-400 mb-2">
+            {isForAddingMembers 
+              ? t("messenger.selectUsersToAdd")
+              : t("messenger.selectMinTwoUsers")
+            }
             {selectedUsers.length > 0 && ` (${selectedUsers.length} ${t("messenger.selected")})`}
           </p>
           
@@ -120,7 +163,7 @@ const UserSearchModal = ({ isOpen, onClose, onCreateGroup, currentUserId }) => {
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             placeholder={t("messenger.searchFriends")}
-            className="w-full p-2 border border-gray-300 rounded-lg mb-4"
+            className="w-full p-2 border border-gray-700 rounded-lg mb-4 bg-gray-800 text-white"
           />
           
           {loading ? (
@@ -133,7 +176,7 @@ const UserSearchModal = ({ isOpen, onClose, onCreateGroup, currentUserId }) => {
                 filteredUsers.map((user) => (
                   <div
                     key={user.id}
-                    className="flex items-center p-3 hover:bg-gray-100 rounded-lg cursor-pointer"
+                    className="flex items-center p-3 hover:bg-gray-800 rounded-lg cursor-pointer"
                     onClick={() => toggleUser(user.id)}
                   >
                     <input
@@ -149,9 +192,9 @@ const UserSearchModal = ({ isOpen, onClose, onCreateGroup, currentUserId }) => {
                         className="w-full h-full object-cover"
                       />
                     </div>
-                    <div>
+                    <div className="text-white">
                       <p className="font-medium">{user.userFullname}</p>
-                      <p className="text-sm text-gray-500">
+                      <p className="text-sm text-gray-400">
                         @{user.userNickname}
                       </p>
                     </div>
@@ -166,14 +209,27 @@ const UserSearchModal = ({ isOpen, onClose, onCreateGroup, currentUserId }) => {
               )}
             </div>
           )}
-          <button
-            className="w-full mt-4 bg-blue-600 text-white py-2 rounded disabled:opacity-50"
-            disabled={selectedUsers.length < 2 || !groupName.trim()}
-            onClick={handleCreateGroup}
-          >
-            {t("messenger.createGroup")}
-            {selectedUsers.length < 2 && ` (${t("messenger.needMoreUsers")})`}
-          </button>
+          <div className="mt-4 flex justify-between">
+            <button
+              onClick={onClose}
+              className="px-4 py-2 bg-gray-700 text-white rounded hover:bg-gray-600"
+            >
+              {t("messenger.cancel")}
+            </button>
+            <button
+              onClick={isForAddingMembers ? handleAddMembers : handleCreateGroup}
+              className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+              disabled={isForAddingMembers 
+                ? selectedUsers.length < 1 
+                : selectedUsers.length < 2 || !groupName.trim()
+              }
+            >
+              {isForAddingMembers 
+                ? t("messenger.addSelected")
+                : t("messenger.createGroup")
+              }
+            </button>
+          </div>
         </div>
       </div>
     </div>

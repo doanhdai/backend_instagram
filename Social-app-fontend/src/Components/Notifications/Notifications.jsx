@@ -16,6 +16,7 @@ const Notification = () => {
   const { userInfo } = useSelector((state) => state.login);
   const dispatch = useDispatch();
   const { t } = useTranslation();
+
   useEffect(() => {
     const fetchData = async () => {
       try {

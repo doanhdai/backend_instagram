@@ -173,7 +173,7 @@ const LargeNav = () => {
           })}
 
           {/* Search panel */}
-          {openSearch && <SearchPanel onClose={() => setOpenSearch(false)} />}
+          {openSearch && <SearchPanel isOpen= {true} onClose={() => setOpenSearch(false)} />}
 
           {/* Nút mở Modal Tạo Post và Story */}
           <button

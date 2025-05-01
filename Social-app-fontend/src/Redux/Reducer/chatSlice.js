@@ -295,6 +295,22 @@ const chatSlice = createSlice({
     setLoading: (state, action) => {
       state.loading = action.payload;
     },
+
+    updateConversationName: (state, action) => {
+      const { conversationId, name } = action.payload;
+      
+      const conversationIndex = state.conversations.findIndex(
+        c => c.id === conversationId
+      );
+      
+      if (conversationIndex >= 0) {
+        state.conversations[conversationIndex].name = name;
+      }
+    
+      if (state.currentConversation && state.currentConversation.id === conversationId) {
+        state.currentConversation.name = name;
+      }
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -484,7 +500,8 @@ export const {
   updateMessageStatus,
   updateConversationWithLatestMessage,
   resetMessages, 
-  setLoading 
+  setLoading,
+  updateConversationName, 
 } = chatSlice.actions;
 
 export default chatSlice.reducer;

@@ -36,6 +36,7 @@ import IncomingCallModal from "./IncomingCallModal";
 import VideoCallModal from "./VideoCallModal";
 
 import instance from "../../Utils/AxiosApi/Axios"; // Thêm dòng này ở đầu file
+import ConversationDetails from "./ConversationDetails";
 
 const SearchBar = ({ searchTerm, setSearchTerm, className = "" }) => {
   const { t } = useTranslation();
@@ -234,6 +235,9 @@ const MessengerPage = () => {
   const peerConnection = useRef(null);
   const [showFullSearch, setShowFullSearch] = useState(false); // Thêm state mới để kiểm soát hiển thị thanh tìm kiếm
   const [friendCandidates, setFriendCandidates] = useState([]); // Thêm state để lưu danh sách bạn bè
+  const [showDetails, setShowDetails] = useState(false);
+  // Add a new state for blocking status
+  const [isUserBlocked, setIsUserBlocked] = useState(false);
 
   // Sửa lại useEffect để đảm bảo thứ tự khởi tạo đúng
   useEffect(() => {
@@ -869,6 +873,17 @@ const MessengerPage = () => {
     }
   };
 
+  const handleMarkAsRead = () => {
+    if (currentConversation && currentUser?.id) {
+      dispatch(
+        markMessagesAsRead({
+          conversationId: currentConversation.id,
+          userId: currentUser.id,
+        })
+      );
+    }
+  };
+
   // Thêm effect để xử lý khi cuộc gọi bị kết thúc từ phía bên kia
   useEffect(() => {
     const socket = socketRef.current;
@@ -938,6 +953,32 @@ const MessengerPage = () => {
     fetchFriends();
   }, [searchTerm, currentUser?.id, conversations]);
 
+  // Add a useEffect to check block status when conversation changes
+  useEffect(() => {
+    if (currentConversation && !currentConversation.isGroupChat && currentConversation.participants?.length === 2) {
+      const otherUser = currentConversation.participants.find(
+        p => (p.userId || p.id) !== currentUser?.id
+      );
+      
+      if (otherUser && currentUser) {
+        checkBlockStatus(otherUser.userId || otherUser.id, currentUser.id);
+      }
+    } else {
+      setIsUserBlocked(false);
+    }
+  }, [currentConversation, currentUser]);
+
+  // Add this function to check block status
+  const checkBlockStatus = async (otherUserId, userId) => {
+    try {
+      const response = await instance.get(`/chat/block-status?userId=${userId}&otherUserId=${otherUserId}`);
+      setIsUserBlocked(response.data.isBlocked || false);
+    } catch (error) {
+      console.error("Error checking block status:", error);
+      setIsUserBlocked(false);
+    }
+  };
+
   // Sửa lại phần render để hiển thị trang chào mừng đúng cách
   return (
     <div className="flex h-screen bg-black w-full">
@@ -1001,10 +1042,10 @@ const MessengerPage = () => {
                     <FaVideo className="text-gray-600 text-lg" />
                   </button>
                 </div>
-                <button className="text-gray-400 hover:text-white p-2">
-                  <FaInfoCircle />
-                </button>
-                <button className="text-gray-400 hover:text-white p-2">
+                <button 
+                  className="text-gray-400 hover:text-white p-2"
+                  onClick={() => setShowDetails(true)}
+                >
                   <FaInfoCircle />
                 </button>
               </div>
@@ -1067,6 +1108,8 @@ const MessengerPage = () => {
               onChange={(e) => setNewMessage(e.target.value)}
               onSend={handleSendMessage}
               inputRef={messageInputRef}
+              isBlocked={isUserBlocked}
+              onFocus={handleMarkAsRead} // <-- thêm dòng này
             />
           </>
         ) : (
@@ -1201,6 +1244,16 @@ const MessengerPage = () => {
           callAccepted={callAccepted}
           name={name}
         />
+      )}
+      {/* Conversation Details Panel */}
+      {showDetails && currentConversation && (
+        <div className="w-1/4 min-w-[300px]">
+          <ConversationDetails 
+            conversation={currentConversation} 
+            onClose={() => setShowDetails(false)}
+            currentUser={currentUser}
+          />
+        </div>
       )}
     </div>
   );

@@ -2,36 +2,29 @@ import React, { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { getStories, deleteStory } from "../../Service/storyApi";
 import { GrFormPrevious, GrFormNext } from "react-icons/gr";
-import { IoIosMore, IoIosPause, IoIosPlay } from "react-icons/io";
-import { IoVolumeMediumOutline, IoVolumeMuteOutline } from "react-icons/io5";
-import { AiOutlineHeart } from "react-icons/ai";
+import { IoIosMore, IoIosPause } from "react-icons/io";
+import { IoVolumeMediumOutline } from "react-icons/io5";
+import { AiOutlineHeart, AiOutlineSend } from "react-icons/ai";
 import { LuSend } from "react-icons/lu";
-
 const StoryViewer = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-
   const [stories, setStories] = useState([]);
   const [currentStoryIndex, setCurrentStoryIndex] = useState(0);
   const [progress, setProgress] = useState(0);
   const [showOptions, setShowOptions] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-  const [message, setMessage] = useState("");
-  const [isLiked, setIsLiked] = useState(false);
-  const [isPaused, setIsPaused] = useState(false);
-  const [isMuted, setIsMuted] = useState(true);
 
   const videoRef = useRef(null);
   const animationRef = useRef(null);
+  const startTimeRef = useRef(null);
   const durationRef = useRef(10000);
-  const savedProgressRef = useRef(0);
-
-  const parsedId = Number(id);
-
+  const [message, setMessage] = useState("");
+  const [isLiked, setIsLiked] = useState(false);
   const fetchStories = async () => {
     try {
-      const { data } = await getStories();
-      setStories(data || []);
+      const response = await getStories();
+      setStories(response.data);
     } catch (error) {
       console.error("Error fetching stories:", error);
     }
@@ -41,50 +34,38 @@ const StoryViewer = () => {
     fetchStories();
   }, []);
 
+  const parsedId = parseInt(id, 10);
   const currentStory = stories.find((story) => story.id === parsedId);
+  console.log(id);
+  console.log(currentStory);
   const isVideo =
     currentStory?.url?.endsWith(".mp4") || currentStory?.url?.endsWith(".mp3");
 
   useEffect(() => {
-    if (!stories.length) return;
-    const index = stories.findIndex((story) => story.id === parsedId);
-    setCurrentStoryIndex(index >= 0 ? index : 0);
+    if (stories.length > 0) {
+      const index = stories.findIndex((story) => story.id === parsedId);
+      setCurrentStoryIndex(index >= 0 ? index : 0);
+    }
   }, [stories, parsedId]);
 
   useEffect(() => {
     if (!currentStory) return;
+
     let isCancelled = false;
 
     const startProgress = () => {
-      if (isPaused) {
-        if (!isVideo) {
-          savedProgressRef.current = progress;
-        }
-        cancelAnimationFrame(animationRef.current);
-        return;
-      }
+      startTimeRef.current = Date.now();
 
       const animate = () => {
-        if (isPaused || isCancelled) return;
-
-        let progressPercent;
-        if (isVideo && videoRef.current) {
-          progressPercent =
-            (videoRef.current.currentTime / videoRef.current.duration) * 100;
-        } else {
-          const elapsed = Date.now() - (startTimeRef.current || Date.now());
-          const remainingTime =
-            durationRef.current * (1 - savedProgressRef.current / 100);
-          progressPercent =
-            savedProgressRef.current +
-            (elapsed / remainingTime) * (100 - savedProgressRef.current);
-        }
+        const elapsed = Date.now() - startTimeRef.current;
+        const progressPercent = (elapsed / durationRef.current) * 100;
 
         if (progressPercent >= 100) {
           setProgress(100);
           if (!isCancelled) {
             if (currentStoryIndex < stories.length - 1) {
-              navigate(`/user/story/${stories[currentStoryIndex + 1].id}`);
+              const nextStory = stories[currentStoryIndex + 1];
+              navigate(`/user/story/${nextStory.id}`);
             } else {
               navigate("/user/home");
             }
@@ -95,21 +76,15 @@ const StoryViewer = () => {
         }
       };
 
-      if (!isVideo) {
-        startTimeRef.current = Date.now();
-      }
       animationRef.current = requestAnimationFrame(animate);
     };
 
-    let startTimeRef = { current: null };
-
     if (isVideo && videoRef.current) {
       const handleLoadedMetadata = () => {
-        const videoDuration = (videoRef.current?.duration || 10) * 1000;
+        const videoDuration = videoRef.current.duration * 1000 || 10000;
         durationRef.current = videoDuration;
         setProgress(0);
-        savedProgressRef.current = 0;
-        if (!isPaused) startProgress();
+        startProgress();
       };
 
       videoRef.current.addEventListener("loadedmetadata", handleLoadedMetadata);
@@ -117,104 +92,48 @@ const StoryViewer = () => {
       return () => {
         isCancelled = true;
         cancelAnimationFrame(animationRef.current);
-        videoRef.current?.removeEventListener(
+        videoRef.current.removeEventListener(
           "loadedmetadata",
           handleLoadedMetadata
         );
       };
     } else {
       durationRef.current = 10000;
-      setProgress(savedProgressRef.current);
-      if (!isPaused) startProgress();
+      setProgress(0);
+      startProgress();
 
       return () => {
         isCancelled = true;
         cancelAnimationFrame(animationRef.current);
       };
     }
-  }, [
-    currentStoryIndex,
-    currentStory?.url,
-    navigate,
-    stories,
-    isPaused,
-    isVideo,
-  ]);
-
-  useEffect(() => {
-    if (isVideo && videoRef.current) {
-      if (isPaused) {
-        videoRef.current.pause();
-      } else {
-        videoRef.current.play().catch((error) => {
-          console.error("Error playing video:", error);
-        });
-      }
-      videoRef.current.muted = isMuted;
-    }
-  }, [isPaused, isMuted, isVideo]);
-
-  const handlePauseToggle = () => {
-    setIsPaused((prev) => !prev);
-  };
-
-  const handleMuteToggle = () => {
-    setIsMuted((prev) => !prev);
-  };
+  }, [currentStoryIndex, currentStory?.url]);
 
   const handlePrevious = () => {
     if (currentStoryIndex > 0) {
-      navigate(`/user/story/${stories[currentStoryIndex - 1].id}`);
+      const prevStory = stories[currentStoryIndex - 1];
+      navigate(`/user/story/${prevStory.id}`);
+      setProgress(0);
     }
   };
 
   const handleNext = () => {
     if (currentStoryIndex < stories.length - 1) {
-      navigate(`/user/story/${stories[currentStoryIndex + 1].id}`);
+      const nextStory = stories[currentStoryIndex + 1];
+      navigate(`/user/story/${nextStory.id}`);
+      setProgress(0);
     } else {
       navigate("/user/home");
     }
   };
 
-  const handleClose = () => navigate("/");
-
-  const handleSendMessage = () => {
-    if (message.trim()) {
-      console.log("Tin nhắn đã gửi:", message);
-      setMessage("");
-    }
+  const handleClose = () => {
+    navigate("/");
   };
 
-  const handleLike = () => {
-    setIsLiked((prev) => !prev);
-    console.log("Đã thích story:", currentStory.id);
-  };
-
-  const handleDeleteStory = async () => {
-    if (!currentStory) return;
-    try {
-      await deleteStory(currentStory.id);
-      const updatedStories = stories.filter(
-        (story) => story.id !== currentStory.id
-      );
-      setStories(updatedStories);
-      setShowDeleteConfirm(false);
-      setShowOptions(false);
-
-      if (updatedStories.length) {
-        const nextStory =
-          updatedStories[
-            Math.min(currentStoryIndex, updatedStories.length - 1)
-          ];
-        navigate(`/user/story/${nextStory.id}`);
-      } else {
-        navigate("/user/home");
-      }
-    } catch (error) {
-      console.error("Error deleting story:", error);
-    }
-  };
-
+  if (!currentStory) {
+    return <div className="text-white text-center">Loading...</div>;
+  }
   const timeAgo = (timestamp) => {
     const now = new Date();
     const created = new Date(timestamp);
@@ -223,31 +142,69 @@ const StoryViewer = () => {
     const diffMin = Math.floor(diffSec / 60);
     const diffHour = Math.floor(diffMin / 60);
 
-    if (diffHour >= 1) return `${diffHour} giờ trước`;
-    if (diffMin >= 1) return `${diffMin} phút trước`;
+    if (diffHour >= 1) return `${diffHour} giờ`;
+    if (diffMin >= 1) return `${diffMin} phút`;
     return "Vừa xong";
   };
 
-  if (!currentStory) {
-    return <div className="text-white text-center">Loading...</div>;
-  }
+  // Xử lý gửi tin nhắn
+  const handleSendMessage = () => {
+    if (message.trim()) {
+      console.log("Tin nhắn đã gửi:", message); // Thay bằng logic gửi tin nhắn thực tế
+      setMessage(""); // Reset ô nhập sau khi gửi
+    }
+  };
+
+  const handleLike = () => {
+    setIsLiked(!isLiked);
+    console.log("Đã thích story:", currentStory.id);
+  };
+
+  const handleDeleteStory = async () => {
+    try {
+      await deleteStory(currentStory.id);
+      const updatedStories = stories.filter(
+        (story) => story.id !== currentStory.id
+      );
+      setStories(updatedStories);
+
+      if (updatedStories.length === 0) {
+        navigate("/user/home");
+      } else {
+        const nextIndex =
+          currentStoryIndex >= updatedStories.length
+            ? currentStoryIndex - 1
+            : currentStoryIndex;
+        const nextStory = updatedStories[nextIndex];
+        navigate(`/user/story/${nextStory.id}`);
+      }
+
+      setShowDeleteConfirm(false);
+      setShowOptions(false);
+    } catch (error) {
+      console.error("Error deleting story:", error);
+    }
+  };
 
   return (
     <div className="fixed inset-0 bg-[#1b1b1b] flex justify-center items-center z-50">
+      {/* Container lớn hơn để chứa cả ảnh và các nút */}
       <div className="relative flex items-center justify-center w-full h-full">
+        {/* Container cho ảnh/video */}
         <div className="w-full max-w-[400px] h-full bg-black relative overflow-hidden rounded-lg">
-          {/* Progress Bar */}
+          {/* Thanh tiến trình */}
           <div className="absolute top-3 left-1 right-1 flex gap-10">
-            <div className="flex-1 h-[2px] bg-white/30 relative">
+            <div className="flex-1 h-[2px] bg-white/30 relative overflow-hidden">
               <div
-                className="absolute top-0 left-0 h-full bg-white"
-                style={{ width: `${progress}%` }}
+                className="absolute top-0 left-0 h-full bg-white transition-none"
+                style={{
+                  width: `${progress}%`,
+                }}
               />
             </div>
           </div>
-
-          {/* Header */}
           <div className="absolute top-7 left-2 right-2 flex items-center justify-between text-white z-10">
+            {/* Left: Avatar, nickname, time */}
             <div className="flex items-center gap-2">
               <img
                 src={
@@ -260,48 +217,55 @@ const StoryViewer = () => {
               <div>
                 <div className="flex items-center gap-1 text-sm font-semibold">
                   <span>{currentStory.user?.userNickname || "Unknown"}</span>
-                  <span className="text-xs opacity-70">
+                  <span className="text-xs font-normal opacity-70">
                     • {timeAgo(currentStory.createdAt)}
                   </span>
                 </div>
                 {currentStory.music && (
                   <div className="text-xs opacity-80">
-                    <strong>{currentStory.music.artist}</strong> -{" "}
-                    {currentStory.music.title}
+                    <span className="font-semibold">
+                      {currentStory.music.artist}
+                    </span>{" "}
+                    - {currentStory.music.title}
                   </div>
                 )}
               </div>
             </div>
 
+            {/* Right: Icons */}
             <div className="flex items-center gap-3 text-xl">
-              <button onClick={handleMuteToggle} className="hover:opacity-70">
-                {isMuted ? <IoVolumeMuteOutline /> : <IoVolumeMediumOutline />}
+              <button className="hover:opacity-70">
+                <IoVolumeMediumOutline />
               </button>
-              <button onClick={handlePauseToggle} className="hover:opacity-70">
-                {isPaused ? <IoIosPlay /> : <IoIosPause />}
+              <button className="hover:opacity-70">
+                <IoIosPause />
               </button>
               <div className="relative">
                 <button
-                  onClick={() => setShowOptions((prev) => !prev)}
                   className="hover:opacity-70"
+                  onClick={() => setShowOptions(!showOptions)}
                 >
                   <IoIosMore />
                 </button>
+
+                {/* Options Menu */}
                 {showOptions && (
-                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-20">
-                    <button
-                      onClick={() => setShowDeleteConfirm(true)}
-                      className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50"
-                    >
-                      Xóa Story
-                    </button>
+                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-10">
+                    <div className="py-1">
+                      <button
+                        className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50"
+                        onClick={() => setShowDeleteConfirm(true)}
+                      >
+                        Xóa Story
+                      </button>
+                    </div>
                   </div>
                 )}
               </div>
             </div>
           </div>
 
-          {/* Media */}
+          {/* Media Story */}
           <div
             onClick={handleClose}
             className="flex justify-center items-center h-full"
@@ -311,8 +275,8 @@ const StoryViewer = () => {
                 ref={videoRef}
                 src={currentStory.url}
                 className="w-[400px] h-auto object-contain"
-                autoPlay={!isPaused}
-                muted={isMuted}
+                autoPlay
+                muted
               />
             ) : (
               <img
@@ -323,16 +287,22 @@ const StoryViewer = () => {
             )}
           </div>
 
-          {/* Input & Actions */}
+          {/* Khu vực gửi tin nhắn và nút Thích/Chia sẻ */}
           <div className="absolute bottom-4 left-2 right-2 flex items-center gap-2 z-10">
-            <input
-              type="text"
-              value={message}
-              onChange={(e) => setMessage(e.target.value)}
-              placeholder="Trả lời..."
-              className="flex-1 px-3 py-2 bg-transparent border border-white/30 rounded-full text-white placeholder-white/50 focus:outline-none focus:border-white/50"
-              onKeyDown={(e) => e.key === "Enter" && handleSendMessage()}
-            />
+            {/* Ô nhập tin nhắn */}
+            <div className="flex-1">
+              <input
+                type="text"
+                value={message}
+                onChange={(e) => setMessage(e.target.value)}
+                placeholder="Trả lời..."
+                className="w-full px-3 py-2 bg-transparent border border-white/30 rounded-full text-white placeholder-white/50 focus:outline-none focus:border-white/50"
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") handleSendMessage();
+                }}
+              />
+            </div>
+            {/* Nút Thích */}
             <button
               onClick={handleLike}
               className={`text-xl ${
@@ -341,51 +311,53 @@ const StoryViewer = () => {
             >
               <AiOutlineHeart size={30} />
             </button>
+            {/* Nút Chia sẻ */}
             <button className="text-xl text-white hover:opacity-70">
               <LuSend />
             </button>
           </div>
         </div>
 
-        {/* Previous/Next Buttons */}
+        {/* Nút Previous - Đặt bên ngoài container ảnh, lùi sang trái */}
         <button
           onClick={(e) => {
             e.stopPropagation();
             handlePrevious();
           }}
-          className="absolute left-[calc(50%-220px)] top-1/2 transform -translate-y-1/2 -translate-x-full bg-white/30 text-white p-1 rounded-full hover:bg-opacity-75"
+          className="absolute left-[calc(50%-220px)] top-1/2 transform -translate-y-1/2 -translate-x-full bg-white/30 bg-opacity-50 text-white p-1 rounded-full hover:bg-opacity-75"
         >
           <GrFormPrevious />
         </button>
+
+        {/* Nút Next - Đặt bên ngoài container ảnh, lùi sang phải */}
         <button
           onClick={(e) => {
             e.stopPropagation();
             handleNext();
           }}
-          className="absolute right-[calc(50%-220px)] top-1/2 transform -translate-y-1/2 translate-x-full bg-white/30 text-white p-1 rounded-full hover:bg-opacity-75"
+          className="absolute right-[calc(50%-220px)] top-1/2 transform -translate-y-1/2 translate-x-full bg-white/30 bg-opacity-50 text-white p-1 rounded-full hover:bg-opacity-75"
         >
           <GrFormNext />
         </button>
 
-        {/* Delete Confirmation */}
+        {/* Delete Confirmation Modal */}
         {showDeleteConfirm && (
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-            <div className="bg-white p-6 rounded-lg text-center">
-              <h2 className="text-lg font-semibold mb-4">
-                Bạn có chắc muốn xóa story này không?
-              </h2>
-              <div className="flex justify-center gap-4">
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-lg p-6 max-w-sm w-full mx-4">
+              <h3 className="text-lg font-semibold mb-4">Xác nhận xóa</h3>
+              <p className="mb-6">Bạn có chắc chắn muốn xóa story này?</p>
+              <div className="flex justify-end space-x-4">
                 <button
-                  onClick={handleDeleteStory}
-                  className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded"
-                >
-                  Xóa
-                </button>
-                <button
+                  className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded"
                   onClick={() => setShowDeleteConfirm(false)}
-                  className="bg-gray-300 hover:bg-gray-400 px-4 py-2 rounded"
                 >
                   Hủy
+                </button>
+                <button
+                  className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+                  onClick={handleDeleteStory}
+                >
+                  Xóa
                 </button>
               </div>
             </div>

@@ -11,7 +11,7 @@ import { useSelector } from "react-redux";
 const Stories = () => {
   const [stories, setStories] = useState([]);
   const { userInfo } = useSelector((state) => state.login);
-
+  console.log("userInfo", userInfo.id);
   const fetchStories = async () => {
     const response = await getStoryByFollowing(userInfo.id);
     setStories(response.data);

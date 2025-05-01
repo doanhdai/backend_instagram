@@ -1,16 +1,17 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { FaSearch, FaTimes } from "react-icons/fa";
 import { handleGetAllUser } from "../../Service/UserAPI";
 import { Link } from "react-router-dom";
 import Route from "../../Components/Routes/index";
 import { useTranslation } from "react-i18next";
 
-const SearchBar = ({ onClose }) => {
+const SearchBar = ({ isOpen, onClose }) => {
   const { t } = useTranslation();
   const [searchTerm, setSearchTerm] = useState("");
   const [originalUsers, setOriginalUsers] = useState([]);
   const [filteredUsers, setFilteredUsers] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
+  const searchRef = useRef(null); // 👈 Đã sửa chỗ này
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -27,6 +28,24 @@ const SearchBar = ({ onClose }) => {
 
     fetchUsers();
   }, []);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (searchRef.current && !searchRef.current.contains(event.target)) {
+        onClose();
+      }
+    };
+
+    if (isOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    } else {
+      document.removeEventListener("mousedown", handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isOpen, onClose]);
 
   const handleSearch = (e) => {
     const value = e.target.value.toLowerCase();
@@ -50,8 +69,13 @@ const SearchBar = ({ onClose }) => {
     setFilteredUsers([]);
   };
 
+  if (!isOpen) return null; // 👈 Để đây luôn cho gọn
+
   return (
-    <div className="fixed top-0 left-[270px] h-screen w-[397px] bg-black border-r border-gray-800 z-[100]">
+    <div
+      ref={searchRef}
+      className="fixed top-0 left-[270px] h-screen w-[397px] bg-black border-r border-gray-800 z-[100]"
+    >
       {/* Header */}
       <div className="sticky top-0 bg-black px-4 pt-3 pb-3 border-b border-gray-800">
         <div className="flex items-center justify-between mb-6">
@@ -93,7 +117,7 @@ const SearchBar = ({ onClose }) => {
       <div className="h-[calc(100vh-116px)] overflow-y-auto">
         {isLoading ? (
           <div className="flex items-center justify-center h-full">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+            <div className="animate-spin rounded-full h-8 w-8 border-4 border-gray-300 border-t-blue-500"></div>
           </div>
         ) : searchTerm ? (
           <div className="py-2">
