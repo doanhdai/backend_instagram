@@ -12,31 +12,46 @@ const privacyOptions = [
 ];
 
 const FormCreateStory = () => {
-  const [image, setImage] = useState(null);
-  const [previewImage, setPreviewImage] = useState(null);
+  const [file, setFile] = useState(null);
+  const [previewUrl, setPreviewUrl] = useState(null);
+  const [fileType, setFileType] = useState(""); // NEW: track loại file
   const [privacy, setPrivacy] = useState(privacyOptions[0].value);
   const { userInfo } = useSelector((state) => state.login);
   const navigate = useNavigate();
   const [t] = useTranslation();
 
-  const handleImageChange = (e) => {
-    const file = e.target.files[0];
-    setImage(file);
-    if (file) {
-      const imageUrl = URL.createObjectURL(file);
-      setPreviewImage(imageUrl);
+  const handleFileChange = (e) => {
+    const selectedFile = e.target.files[0];
+    if (!selectedFile) {
+      setFile(null);
+      setPreviewUrl(null);
+      setFileType("");
+      return;
+    }
+
+    setFile(selectedFile);
+    setPreviewUrl(URL.createObjectURL(selectedFile));
+
+    // Kiểm tra loại file
+    if (selectedFile.type.startsWith("image/")) {
+      setFileType("image");
+    } else if (selectedFile.type.startsWith("video/")) {
+      setFileType("video");
     } else {
-      setPreviewImage(null);
+      toast.error("Chỉ chấp nhận file ảnh hoặc video!");
+      setFile(null);
+      setPreviewUrl(null);
+      setFileType("");
     }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!image) return toast.warn("Vui lòng chọn ảnh!");
+    if (!file) return toast.warn("Vui lòng chọn ảnh hoặc video!");
 
     const formData = new FormData();
     formData.append("userId", userInfo.id);
-    formData.append("file", image);
+    formData.append("file", file);
     formData.append("access", privacy);
     formData.append("status", "1");
 
@@ -44,10 +59,10 @@ const FormCreateStory = () => {
       const response = await createStory(formData);
       if (response?.statusCode === 200) {
         toast.success("Đăng story thành công!");
-        setImage(null);
-        setPreviewImage(null);
+        setFile(null);
+        setPreviewUrl(null);
         setPrivacy(privacyOptions[0].value);
-        navigate("/"); // hoặc nơi cần redirect
+        navigate("/");
       } else {
         toast.error("Đăng story thất bại!");
       }
@@ -62,33 +77,45 @@ const FormCreateStory = () => {
       <h2 className="text-2xl font-semibold mb-4">Đăng Story Mới</h2>
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label className="block mb-1 text-sm">Hình ảnh</label>
+          <label className="block mb-1 text-sm">Hình ảnh hoặc Video</label>
 
           <div className="flex items-center gap-4">
             <button
               type="button"
-              onClick={() => document.getElementById("imageInput").click()}
+              onClick={() => document.getElementById("fileInput").click()}
               className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
             >
-              Chọn ảnh
+              Chọn tệp
             </button>
           </div>
 
           <input
             type="file"
-            id="imageInput"
-            accept="image/*"
-            onChange={handleImageChange}
+            id="fileInput"
+            accept="image/*,video/*"
+            onChange={handleFileChange}
             className="hidden"
           />
         </div>
 
-        {previewImage && (
-          <img
-            src={previewImage}
-            alt="Preview"
-            className="border h-60 w-60 object-cover rounded-md"
-          />
+        {/* Preview ảnh hoặc video */}
+        {previewUrl && (
+          <div className="border rounded-md overflow-hidden">
+            {fileType === "image" && (
+              <img
+                src={previewUrl}
+                alt="Preview"
+                className="h-60 w-60 object-cover"
+              />
+            )}
+            {fileType === "video" && (
+              <video
+                src={previewUrl}
+                controls
+                className="h-60 w-60 object-cover"
+              />
+            )}
+          </div>
         )}
 
         <div>
