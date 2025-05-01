@@ -35,14 +35,6 @@ const NewsFeedCart = () => {
 
   useEffect(() => {
     if (userInfo?.id) {
-      // notificationSocket.init(dispatch, userInfo.id);
-      // notificationSocket.subscribeToNotifications((notification) => {
-      //   setNotifications((prev) => {
-      //     const updated = [notification, ...prev];
-      //     console.log("Updated notifications state:", updated);
-      //     return updated;
-      //   });
-      // });
       notificationSocket.subscribeToLikeUpdates((data) => {
         // console.log("Updating postData with like:", data);
         setPostData((prev) =>
@@ -100,17 +92,24 @@ const NewsFeedCart = () => {
     fetchPostData();
   }, [check]);
 
-  const handleLikePost = async (id) => {
+  const handleLikePost = async (id, likesCount) => {
     try {
       if (likes[id]) {
         toast.info("Bạn đã thích bài viết này!");
         return;
       }
       await handleLike(id, userInfo.id);
+      const newLikesCount = likesCount + 1;
       setLikes((prevLikes) => ({
         ...prevLikes,
         [id]: true,
       }));
+      setPostData((prev) =>
+        prev.map((post) =>
+          post.id === id ? { ...post, likesCount: newLikesCount } : post
+        )
+      );
+      toast.success("Đã thích bài viết!");
     } catch (error) {
       console.error("Error liking post:", error);
       if (error.response?.data?.message?.includes("đã thích")) {
@@ -270,7 +269,7 @@ const NewsFeedCart = () => {
             <div className="flex items-center justify-between mb-2">
               <div className="flex gap-4 text-xl">
                 <button
-                  onClick={() => handleLikePost(item.id)}
+                  onClick={() => handleLikePost(item.id, item.likesCount)}
                   className="hover:scale-110 transition"
                 >
                   {likes[item.id] ? (

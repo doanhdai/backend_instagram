@@ -143,11 +143,29 @@ class NotificationSocket {
 
     this.socket.on("like_update", (data) => {
       console.log("Received like update:", data);
-      if (typeof callback === "function") {
-        callback(data);
+      
+      let notification;
+      try {
+        const jsonData = Array.isArray(data) ? data[0] : data;
+        notification =
+          typeof jsonData === "string" ? JSON.parse(jsonData) : jsonData;
+        console.log("Parsed notification:", notification);
+        if (typeof callback === "function") {
+          callback(notification);
+        }
+      } catch (e) {
+        console.error(
+          "Error parsing or processing notification:",
+          e,
+          "Raw data:",
+          data
+        );
+        return;
       }
     });
   }
+
+
 
   subscribeToCommentUpdates(callback) {
     if (!this.socket) {

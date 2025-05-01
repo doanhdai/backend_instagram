@@ -34,59 +34,43 @@ const Notification = () => {
     fetchData();
   }, []);
 
-  const markAsRead = async (notificationId) => {
-    // try {
-    //   await instance.put(`/api/v1/notification/${notificationId}/read`);
-    //   setNotifications((prev) =>
-    //     prev.map((n) =>
-    //       n.notificationId === notificationId ? { ...n, isRead: true } : n
-    //     )
-    //   );
-    //   console.log("Marked notification as read:", notificationId);
-    // } catch (error) {
-    //   console.error("Error marking notification as read:", error);
-    //   toast.error("Không thể đánh dấu thông báo đã đọc!");
-    // }
-  };
-
   useEffect(() => {
     if (!userInfo?.id) return;
 
     notificationSocket.init(dispatch, userInfo.id);
 
-    notificationSocket.subscribeToNotifications((notification) => {
-      // console.log("Received real-time notification:", notification);
-      // notificationSocket.subscribeToLikeUpdates((data) => {
-      //   setNotifications((prev) => {
-      //     // Tránh trùng lặp theo notificationId
-      //     if (prev.some((n) => n.notificationId === data.notificationId)) {
-      //       return prev;
-      //     }
-      //     return [data, ...prev];
-      //   });
-      // });
+    notificationSocket.subscribeToCommentUpdates((data) => {
+      console.log("Received comment update:", data);
       setNotifications((prev) => {
-        // Ngăn trùng lặp dựa trên notificationId
+        if (prev.some((n) => n.id === data.id)) {
+          return prev;
+        }
+        return [data, ...prev];
+      });
+    });
+
+    notificationSocket.subscribeToLikeUpdates((notification) => {
+      console.log("Received like update:", notification);
+
+      setNotifications((prev) => {
         if (
-          prev.some((n) => n.notificationId === notification.notificationId)
+          prev.some(
+            (n) =>
+              n.postId === notification.postId &&
+              n.userNickname === notification.userNickname &&
+              n.message === notification.message
+          )
         ) {
+          console.log("Duplicate like update ignored:", notification);
           return prev;
         }
         return [notification, ...prev];
       });
     });
 
-    // Cleanup khi component unmount
-    return () => {
-      notificationSocket.disconnect();
-    };
-  }, [userInfo?.id, dispatch]);
-
-  useEffect(() => {
-    notificationSocket.init(dispatch, userInfo.id);
     notificationSocket.subscribeToFollow((data) => {
+      console.log("Received follow update:", data);
       setNotifications((prev) => {
-        // Kiểm tra trùng lặp dựa trên các trường khác, ví dụ: fromUserId và timestamp
         if (
           prev.some(
             (n) =>
@@ -98,6 +82,7 @@ const Notification = () => {
         return [data, ...prev];
       });
     });
+
     return () => {
       notificationSocket.disconnect();
     };
