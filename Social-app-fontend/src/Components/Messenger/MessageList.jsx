@@ -53,20 +53,26 @@ const MessageList = ({ messages,
     return null;
   };
 
-  // Hàm xác định có phải là tin nhắn cuối cùng trong cụm của đối phương không
+  // Xác định tin nhắn đầu tiên trong chuỗi liên tiếp của một user
+  const isFirstInCluster = (msg, index, sortedMessages) => {
+    if (msg.senderId === currentUserId) return false;
+    if (index === 0) return true;
+    const prevMsg = sortedMessages[index - 1];
+    return (
+      prevMsg.senderId !== msg.senderId ||
+      Math.abs(new Date(msg.createdAt) - new Date(prevMsg.createdAt)) / 60000 >= 5
+    );
+  };
+
+  // Xác định tin nhắn cuối cùng trong chuỗi liên tiếp của một user
   const isLastInCluster = (msg, index, sortedMessages) => {
-    if (msg.senderId === currentUserId) return false; // chỉ avatar đối phương
-    // Nếu là tin cuối cùng
+    if (msg.senderId === currentUserId) return false;
     if (index === sortedMessages.length - 1) return true;
     const nextMsg = sortedMessages[index + 1];
-    // Nếu tin tiếp theo là của người khác hoặc cách nhau >=5 phút
-    if (
+    return (
       nextMsg.senderId !== msg.senderId ||
       Math.abs(new Date(nextMsg.createdAt) - new Date(msg.createdAt)) / 60000 >= 5
-    ) {
-      return true;
-    }
-    return false;
+    );
   };
 
   // 1. Effect cho việc cuộn xuống sau khi conversation được load lần đầu
@@ -240,7 +246,6 @@ const MessageList = ({ messages,
           <div className='flex flex-col gap-0.5'>
             {sortedMessages.map((msg, index) => {
               const isSentByCurrentUser = msg.senderId === currentUserId;
-
               const previousMsg = index > 0 ? sortedMessages[index - 1] : null;
               const isSenderChanged = previousMsg ? previousMsg.senderId !== msg.senderId : true;
 
@@ -251,7 +256,8 @@ const MessageList = ({ messages,
               );
 
               const showTimestamp = !!timestamp;
-              const showAvatar = isLastInCluster(msg, index, sortedMessages);
+              const showAvatar = isLastInCluster(msg, index, sortedMessages); // avatar ở cuối chuỗi
+              const showSenderName = isFirstInCluster(msg, index, sortedMessages); // tên ở đầu chuỗi
 
               const sender = isGroupChat ? getSenderInfo(msg.senderId) : null;
 
@@ -285,7 +291,7 @@ const MessageList = ({ messages,
                     {/* Cột tin nhắn */}
                     <div className="flex flex-col w-full">
                       {/* Hiển thị tên người gửi trong group chat */}
-                      {isGroupChat && !isSentByCurrentUser && showAvatar && (
+                      {isGroupChat && !isSentByCurrentUser && showSenderName && (
                         <div className="text-xs text-gray-400 mb-1 ml-1">
                           {sender?.userNickname || sender?.userFullname || "User"}
                         </div>
