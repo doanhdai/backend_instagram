@@ -10,66 +10,64 @@ import {
 } from "../../Service/UserAPI";
 import { useWebSocket } from "../../Utils/configCallVideo/websocket";
 import { useTranslation } from "react-i18next";
+import { set } from "lodash";
 
 const RecommendUser = () => {
   const [userList, setUserList] = useState([]);
   const [listOfFollowers, setListOfFollowers] = useState([]);
+  const [followedUsers, setFollowedUsers] = useState(new Set());
   const userApp = useSelector((state) => state.login);
   const { sendFollowNotification } = useWebSocket();
   const [t] = useTranslation();
-  const defaultAvatar = "https://via.placeholder.com/40?text=User";
-  const handleAddFollow = async (followedId) => {
+
+  useEffect(() => {
+    fetchData();
+  }, [listOfFollowers]);
+
+  const fetchData = async () => {
     try {
-      const response = await handlePostFollower(
-        userApp.userInfo.id,
-        followedId
+      const usersResponse = await handleGetAllUser();
+      const followersResponse = await handleGetFollowersByUser(userApp.userInfo.id);
+
+      const allUsers = usersResponse.data;
+      const followers = followersResponse.data;
+      setListOfFollowers(followers);
+
+      const followerIds = followers.map((item) => item.follower.id);
+      const filteredUsers = allUsers.filter(
+        (user) => user.id !== userApp.userInfo.id && !followerIds.includes(user.id)
       );
 
+      setUserList(filteredUsers);
+    } catch (error) {
+      console.error("Lỗi khi fetch data:", error);
+    }
+  };
+
+  const handleAddFollow = async (followedId) => {
+    // Thêm người dùng vào danh sách đã follow ngay lập tức
+    setFollowedUsers(prev => new Set([...prev, followedId]));
+    
+    try {
+      const response = await handlePostFollower(userApp.userInfo.id, followedId);
+
       if (response.statusCode === 201 || response.statusCode === 200) {
-        console.log("Đã follow thành công:", response.data);
-
         sendFollowNotification({ toUserId: String(followedId) });
-
-        const updatedFollowers = await handleGetFollowersByUser(
-          userApp.userInfo.id
-        );
-
-        setListOfFollowers(updatedFollowers.data);
-
-        setUserList((prev) => prev.filter((user) => user.id !== followedId));
+        // Sau khi follow thành công, cập nhật lại danh sách
+        const followersResponse = await handleGetFollowersByUser(userApp.userInfo.id);
+        setListOfFollowers(followersResponse.data);
       }
     } catch (error) {
+      // Nếu có lỗi, xóa người dùng khỏi danh sách đã follow
+      setFollowedUsers(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(followedId);
+        return newSet;
+      });
       console.error("Lỗi khi follow:", error);
     }
   };
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const usersResponse = await handleGetAllUser();
-        const followersResponse = await handleGetFollowersByUser(
-          userApp.userInfo.id
-        );
-
-        const allUsers = usersResponse.data;
-        const followers = followersResponse.data;
-        setListOfFollowers(followers);
-
-        const followerIds = followers.map((item) => item.follower.id);
-        const filteredUsers = allUsers.filter(
-          (user) =>
-            user.id !== userApp.userInfo.id && !followerIds.includes(user.id)
-        );
-
-        setUserList(filteredUsers);
-      } catch (error) {
-        console.error("Lỗi khi fetch data:", error);
-      }
-    };
-
-    fetchData();
-  }, [userApp.userInfo.id]);
-  console.log(userList);
   return (
     <div className="lg:w-[20vw] w-full h-[80vh] p-3 mt-5 bg-black shadow-md border border-gray-800 rounded-md">
       <p className="text-white font-semibold mb-2">
@@ -120,9 +118,17 @@ const RecommendUser = () => {
                 />
                 <p className="text-white">{item.follower.userNickname}</p>
               </div>
-              <div className="text-green-500">
-                <FaCircle />
-              </div>
+              {!item.friend && !followedUsers.has(item.follower.id) && (
+                <button
+                  className="text-blue-400 text-sm hover:text-blue-600 font-medium"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    handleAddFollow(item.follower.id);
+                  }}
+                >
+                  {t("RecommentUser.follow")}
+                </button>
+              )}
             </Link>
           ))}
         </div>
@@ -160,15 +166,17 @@ const RecommendUser = () => {
                 />
                 <p className="text-white">{item.userNickname}</p>
               </div>
-              <button
-                className="text-blue-400 text-sm hover:text-blue-600 font-medium"
-                onClick={(e) => {
-                  e.preventDefault();
-                  handleAddFollow(item.id);
-                }}
-              >
-                {t("RecommentUser.follow")}
-              </button>
+              {!followedUsers.has(item.id) && (
+                <button
+                  className="text-blue-400 text-sm hover:text-blue-600 font-medium"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    handleAddFollow(item.id);
+                  }}
+                >
+                  {t("RecommentUser.follow")}
+                </button>
+              )}
             </Link>
           ))}
         </div>
