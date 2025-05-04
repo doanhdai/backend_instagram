@@ -27,7 +27,9 @@ const RecommendUser = () => {
   const fetchData = async () => {
     try {
       const usersResponse = await handleGetAllUser();
-      const followersResponse = await handleGetFollowersByUser(userApp.userInfo.id);
+      const followersResponse = await handleGetFollowersByUser(
+        userApp.userInfo.id
+      );
 
       const allUsers = usersResponse.data;
       const followers = followersResponse.data;
@@ -35,7 +37,8 @@ const RecommendUser = () => {
 
       const followerIds = followers.map((item) => item.follower.id);
       const filteredUsers = allUsers.filter(
-        (user) => user.id !== userApp.userInfo.id && !followerIds.includes(user.id)
+        (user) =>
+          user.id !== userApp.userInfo.id && !followerIds.includes(user.id)
       );
 
       setUserList(filteredUsers);
@@ -46,20 +49,25 @@ const RecommendUser = () => {
 
   const handleAddFollow = async (followedId) => {
     // Thêm người dùng vào danh sách đã follow ngay lập tức
-    setFollowedUsers(prev => new Set([...prev, followedId]));
-    
+    setFollowedUsers((prev) => new Set([...prev, followedId]));
+
     try {
-      const response = await handlePostFollower(userApp.userInfo.id, followedId);
+      const response = await handlePostFollower(
+        userApp.userInfo.id,
+        followedId
+      );
 
       if (response.statusCode === 201 || response.statusCode === 200) {
         sendFollowNotification({ toUserId: String(followedId) });
         // Sau khi follow thành công, cập nhật lại danh sách
-        const followersResponse = await handleGetFollowersByUser(userApp.userInfo.id);
+        const followersResponse = await handleGetFollowersByUser(
+          userApp.userInfo.id
+        );
         setListOfFollowers(followersResponse.data);
       }
     } catch (error) {
       // Nếu có lỗi, xóa người dùng khỏi danh sách đã follow
-      setFollowedUsers(prev => {
+      setFollowedUsers((prev) => {
         const newSet = new Set(prev);
         newSet.delete(followedId);
         return newSet;
