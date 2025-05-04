@@ -15,6 +15,7 @@ public class CommentDTO {
     private String userImage;
     private Long postId;
     private String content;
-    private Long commentsCount; 
+    private Long commentsCount;
     private LocalDateTime createdAt;
+    private String message; 
 }

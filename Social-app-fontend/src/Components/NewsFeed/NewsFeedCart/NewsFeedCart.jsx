@@ -26,8 +26,6 @@ const NewsFeedCart = () => {
   const [postData, setPostData] = useState([]);
   const [currentImageIndex, setCurrentImageIndex] = useState({});
   const [selectedPost, setSelectedPost] = useState(null);
-  const [notifications, setNotifications] = useState([]);
-  const [datacoment, setDatacoment] = useState([]);
   const [check, setCheck] = useState(false);
   const { userInfo } = useSelector((state) => state.login);
   const { t } = useTranslation();

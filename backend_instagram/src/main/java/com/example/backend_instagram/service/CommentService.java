@@ -97,6 +97,14 @@ public class CommentService {
         dto.setPostId(comment.getPost().getId());
         dto.setContent(comment.getContent());
         dto.setCreatedAt(comment.getCreatedAt());
+        dto.setMessage(comment.getUser().getUserNickname() + " commented: " + truncateComment(comment.getContent(), 50));
         return dto;
+    }
+
+    private String truncateComment(String comment, int maxLength) {
+        if (comment == null || comment.length() <= maxLength) {
+            return comment;
+        }
+        return comment.substring(0, maxLength - 3) + "...";
     }
 }

@@ -80,23 +80,50 @@ public class NotificationService {
 
     public void createLikeNotification(Long postId, Long actorId) {
         try {
-            Post post = postService.getPostById(postId);
-            User actor = userService.fetchUserById(actorId);
-            User receiver = post.getUser();
-
-            String message = actor.getUserNickname() + " liked your post";
-            Notification notification = new Notification(receiver, actor, post, NotificationType.LIKE, message);
-            notificationRepository.save(notification);
-            NotificationDTO notificationDTO = toDTO(notification);
-            logger.info("Created like notification for user: {}, post: {}, {}",
-                    receiver.getId(), postId, notificationDTO);
-            sendNotificationToUser(receiver.getId(), notificationDTO);
-
-            broadcastLikeUpdate(postId, post.getLikesCount(), message, actor.getUserNickname(), actor.getUserImage());
+          Post post = postService.getPostById(postId);
+          User actor = userService.fetchUserById(actorId);
+          User receiver = post.getUser();
+      
+          String message = actor.getUserNickname() + " liked your post";
+          Notification notification = new Notification(receiver, actor, post, NotificationType.LIKE, message);
+          notificationRepository.save(notification);
+          NotificationDTO notificationDTO = toDTO(notification);
+          logger.info("Created like notification for user: {}, post: {}, {}",
+              receiver.getId(), postId, notificationDTO);
+          sendNotificationToUser(receiver.getId(), notificationDTO);
+      
+          // Gửi like update chỉ tới receiver
+          LikeUpdateDTO likeUpdateDTO = new LikeUpdateDTO(
+              postId,
+              post.getLikesCount(),
+              message,
+              actor.getUserNickname(),
+              actor.getUserImage(),
+              receiver.getId(), // receiverId
+              actor.getId() // actorId
+          );
+          sendLikeUpdateToUser(receiver.getId(), likeUpdateDTO);
         } catch (Exception e) {
-            logger.error("Error creating like notification: {}", e.getMessage(), e);
+          logger.error("Error creating like notification: {}", e.getMessage(), e);
         }
-    }
+      }
+
+      private void sendLikeUpdateToUser(Long userId, LikeUpdateDTO likeUpdateDTO) {
+        SocketIOClient client = socketIOHandler.getUserSocketMap().get(userId.toString());
+        if (client != null && client.isChannelOpen()) {
+          try {
+            String json = objectMapper.writeValueAsString(likeUpdateDTO);
+            logger.debug("Serialized like update for user: {}, json: {}", userId, json);
+            client.sendEvent("like_update", json);
+            logger.info("Like update sent to user: {}, content: {}, json: {}",
+                userId, likeUpdateDTO.getMessage(), json);
+          } catch (Exception e) {
+            logger.error("Error sending like update via WebSocket: {}", e.getMessage(), e);
+          }
+        } else {
+          logger.warn("Client not found or not connected for userId: {}", userId);
+        }
+      }
 
     public void createCommentNotification(Long postId, Long actorId, String commentContent) {
         try {
@@ -135,46 +162,14 @@ public class NotificationService {
         } else {
             logger.warn("Client not found or not connected for userId: {}", userId);
         }
-    }
-
-    public void markAllNotificationsAsRead(Long userId) {
-        try {
-            User user = userService.fetchUserById(userId);
-            if (user == null) {
-                throw new IllegalArgumentException("User not found");
-            }
-
-            List<Notification> unreadNotifications = notificationRepository
-                    .findByUserAndIsReadFalseOrderBySentAtDesc(user);
-            if (!unreadNotifications.isEmpty()) {
-                unreadNotifications.forEach(notification -> notification.setRead(true));
-                notificationRepository.saveAll(unreadNotifications);
-                logger.info("Marked {} notifications as read for user: {}", unreadNotifications.size(), userId);
-
-                // Gửi sự kiện qua Socket.IO để thông báo frontend
-                SocketIOClient client = socketIOHandler.getUserSocketMap().get(userId.toString());
-                if (client != null && client.isChannelOpen()) {
-                    client.sendEvent("notifications_read",
-                            Map.of("userId", userId, "message", "All notifications marked as read"));
-                    logger.info("Sent notifications_read event to user: {}", userId);
-                } else {
-                    logger.warn("Client not found or not connected for userId: {}", userId);
-                }
-            } else {
-                logger.debug("No unread notifications found for user: {}", userId);
-            }
-        } catch (Exception e) {
-            logger.error("Error marking notifications as read for user {}: {}", userId, e.getMessage(), e);
-            throw new RuntimeException("Failed to mark notifications as read", e);
-        }
-    }
-    private void broadcastLikeUpdate(Long postId, Integer likesCount, String message, String userNickname,
-            String userImage) {
-        socketIOServer.getBroadcastOperations()
-                .sendEvent("like_update", new LikeUpdateDTO(postId, likesCount, message, userNickname, userImage));
-        logger.info("Broadcast like update: postId={}, likesCount={}, message={}, userNickname={}, userImage={}",
-                postId, likesCount, message, userNickname, userImage);
-    }
+    }    
+    // private void broadcastLikeUpdate(Long postId, Integer likesCount, String message, String userNickname,
+    //         String userImage) {
+    //     socketIOServer.getBroadcastOperations()
+    //             .sendEvent("like_update", new LikeUpdateDTO(postId, likesCount, message, userNickname, userImage));
+    //     logger.info("Broadcast like update: postId={}, likesCount={}, message={}, userNickname={}, userImage={}",
+    //             postId, likesCount, message, userNickname, userImage);
+    // }
 
     private NotificationDTO toDTO(Notification notification) {
         NotificationDTO dto = new NotificationDTO();
@@ -201,19 +196,40 @@ public class NotificationService {
 }
 
 class LikeUpdateDTO {
-    private Long postId;
-    private Integer likesCount;
-    private String message;
-    private String userNickname;
-    private String userImage;
+  private Long postId;
+  private Integer likesCount;
+  private String message;
+  private String userNickname;
+  private String userImage;
+  private Long receiverId; // ID của chủ bài viết
+  private Long actorId; // ID của người gửi like
 
-    public LikeUpdateDTO(Long postId, Integer likesCount, String message, String userNickname, String userImage) {
-        this.postId = postId;
-        this.likesCount = likesCount;
-        this.message = message;
-        this.userNickname = userNickname;
-        this.userImage = userImage;
-    }
+  public LikeUpdateDTO(Long postId, Integer likesCount, String message, String userNickname, String userImage, Long receiverId, Long actorId) {
+    this.postId = postId;
+    this.likesCount = likesCount;
+    this.message = message;
+    this.userNickname = userNickname;
+    this.userImage = userImage;
+    this.receiverId = receiverId;
+    this.actorId = actorId;
+  }
+
+  // Getters và setters
+  public Long getReceiverId() {
+    return receiverId;
+  }
+
+  public void setReceiverId(Long receiverId) {
+    this.receiverId = receiverId;
+  }
+
+  public Long getActorId() {
+    return actorId;
+  }
+
+  public void setActorId(Long actorId) {
+    this.actorId = actorId;
+  }
 
     public Long getPostId() {
         return postId;
