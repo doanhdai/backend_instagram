@@ -93,6 +93,15 @@ public class PostController {
         return ResponseEntity.ok(Map.of("message", "Thích bài viết thành công"));
     }
 
+    @DeleteMapping("/{postId}/like")
+    public ResponseEntity<Map<String, String>> unlikePost(
+            @PathVariable Long postId,
+            @RequestParam Long userId) {
+        likeService.unlikePost(postId, userId);
+        return ResponseEntity.ok(Map.of("message", "Bỏ thích bài viết thành công"));
+    }
+
+
     @PostMapping("/{postId}/comment")
     public ResponseEntity<Map<String, String>> addComment(
             @PathVariable Long postId,
@@ -113,5 +122,11 @@ public class PostController {
     public ResponseEntity<List<Post>> getPostsFromFollowing(@PathVariable Long userId) {
         List<Post> posts = postService.getPostsFromFollowing(userId);
         return ResponseEntity.ok(posts);
+    }
+
+    @GetMapping("/liked/user/{userId}")
+    public ResponseEntity<List<Long>> getLikedPostIdsByUser(@PathVariable Long userId) {
+        List<Long> likedPostIds = likeService.getLikedPostIdsByUser(userId);
+        return ResponseEntity.ok(likedPostIds);
     }
 }

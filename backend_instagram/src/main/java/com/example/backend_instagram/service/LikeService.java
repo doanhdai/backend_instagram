@@ -4,6 +4,9 @@ import com.example.backend_instagram.entity.Like;
 import com.example.backend_instagram.entity.Post;
 import com.example.backend_instagram.entity.User;
 import com.example.backend_instagram.repository.LikeRepository;
+
+import java.util.List;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -45,5 +48,27 @@ public class LikeService {
 
         // Tạo thông báo
         notificationService.createLikeNotification(postId, userId);
+    }
+
+
+    @Transactional
+    public void unlikePost(Long postId, Long userId) {
+        Post post = postService.getPostById(postId);
+        User user = userService.fetchUserById(userId);
+
+        Like like = likeRepository.findByPostAndUser(post, user)
+                .orElseThrow(() -> new IllegalStateException("Người dùng chưa thích bài viết này"));
+
+        likeRepository.delete(like);
+
+        post.setLikesCount(Math.max(0, post.getLikesCount() - 1));
+        postService.savePost(post);
+    }
+
+    public List<Long> getLikedPostIdsByUser(Long userId) {
+        User user = userService.fetchUserById(userId);
+        return likeRepository.findByUser(user).stream()
+                .map(like -> like.getPost().getId())
+                .toList();
     }
 }

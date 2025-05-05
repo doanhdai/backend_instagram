@@ -6,6 +6,7 @@ import {
   getAllPost,
   handleLike,
   getPostByFollowing,
+  getLikedPostIdsByUser,
 } from "../../../Service/postApi";
 import { formatTime } from "../../../Utils";
 import { GrFormPrevious, GrFormNext } from "react-icons/gr";
@@ -18,6 +19,7 @@ import { FaRegComment } from "react-icons/fa";
 import { BsBookmark } from "react-icons/bs";
 import { FaHeart } from "react-icons/fa";
 import { useTranslation } from "react-i18next";
+
 const NewsFeedCart = () => {
   const [likes, setLikes] = useState({});
   const [comments, setComments] = useState({});
@@ -31,10 +33,56 @@ const NewsFeedCart = () => {
   const { t } = useTranslation();
   const dispatch = useDispatch();
 
+  // Hàm lấy danh sách ID bài viết đã thích của người dùng
+  const fetchLikedPosts = async (userId) => {
+    try {
+      const response = await getLikedPostIdsByUser(userId);
+      console.log("Liked post IDs:", response.data); // Debug
+      return response.data; // Trả về mảng ID bài viết đã thích
+    } catch (error) {
+      console.error("Error fetching liked posts:", error);
+      toast.error("Không thể tải danh sách bài viết đã thích!");
+      return []; // Trả về mảng rỗng nếu có lỗi
+    }
+  };
+
+  const fetchPostData = async () => {
+    try {
+      const postsResponse = await getPostByFollowing(userInfo.id);
+      const filteredPosts = postsResponse.data.sort(
+        (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+      );
+      setPostData(filteredPosts);
+
+      const initialIndexes = {};
+      filteredPosts.forEach((post) => {
+        initialIndexes[post.id] = 0;
+      });
+      setCurrentImageIndex(initialIndexes);
+
+      // Lấy danh sách ID bài viết đã thích và khởi tạo state likes
+      const likedPostIds = await fetchLikedPosts(userInfo.id);
+      const initialLikes = {};
+      filteredPosts.forEach((post) => {
+        initialLikes[post.id] = likedPostIds.includes(post.id);
+      });
+      console.log("Initial likes:", likedPostIds); // Debug
+      setLikes(initialLikes);
+    } catch (error) {
+      console.error("Error fetching posts:", error);
+      toast.error("Không thể tải danh sách bài viết!");
+    }
+  };
+
+  useEffect(() => {
+    if (userInfo?.id) {
+      fetchPostData();
+    }
+  }, [userInfo?.id, check]);
+
   useEffect(() => {
     if (userInfo?.id) {
       notificationSocket.subscribeToLikeUpdates((data) => {
-        // console.log("Updating postData with like:", data);
         setPostData((prev) =>
           prev.map((post) =>
             post.id === data.postId
@@ -68,27 +116,6 @@ const NewsFeedCart = () => {
       notificationSocket.disconnect();
     };
   }, [userInfo?.id, dispatch]);
-
-  const fetchPostData = async () => {
-    try {
-      const response = await getPostByFollowing(userInfo.id);
-      const filteredPosts = response.data
-        // .filter((post) => post.status === "True")
-        .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-      setPostData(filteredPosts);
-      const initialIndexes = {};
-      filteredPosts.forEach((post) => {
-        initialIndexes[post.id] = 0;
-      });
-      setCurrentImageIndex(initialIndexes);
-    } catch (error) {
-      console.error("Error fetching posts:", error);
-    }
-  };
-
-  useEffect(() => {
-    fetchPostData();
-  }, [check]);
 
   const handleLikePost = async (id, likesCount) => {
     try {
@@ -144,6 +171,7 @@ const NewsFeedCart = () => {
       [postId]: (prev[postId] - 1 + totalImages) % totalImages,
     }));
   };
+
   const handleCommentAdded = (postId, commentsCount) => {
     setPostData((prev) =>
       prev.map((post) =>
@@ -151,6 +179,7 @@ const NewsFeedCart = () => {
       )
     );
   };
+
   return (
     <div className="flex flex-col items-center gap-6 py-6 bg-black text-white min-h-screen">
       {postData.map((item) => (
@@ -170,13 +199,9 @@ const NewsFeedCart = () => {
                 <h3 className="font-semibold text-sm text-white">
                   {item.user?.userNickname}
                 </h3>
-                {/* <div className="text-xl cursor-pointer text-gray-400 hover:text-white">
-                  ...
-                </div> */}
               </div>
-              <div className="flex items-center gap-1 text-xs text-gray-400 ">
+              <div className="flex items-center gap-1 text-xs text-gray-400">
                 <span>{formatTime(item.createdAt, t)}</span>
-
                 {item?.access === "PUBLIC" && (
                   <div className="relative group">
                     <span
@@ -263,7 +288,6 @@ const NewsFeedCart = () => {
           </div>
 
           <div className="mt-4 px-4 text-white text-sm">
-            {/* Icon Like / Comment / Save */}
             <div className="flex items-center justify-between mb-2">
               <div className="flex gap-4 text-xl">
                 <button
@@ -280,20 +304,18 @@ const NewsFeedCart = () => {
                   onClick={() => handleModelComment(item)}
                   className="hover:scale-110 transition"
                 >
-                  <FaRegComment className=" text-2xl " />
+                  <FaRegComment className="text-2xl" />
                 </button>
               </div>
-              <button className="hover:scale-110 transition text-2xl  ">
+              <button className="hover:scale-110 transition text-2xl">
                 <BsBookmark />
               </button>
             </div>
 
-            {/* Lượt thích */}
             <p className="font-semibold mb-1">
               {item.likesCount} {t("newFed.like")}
             </p>
 
-            {/* Caption */}
             <p className="mb-1 leading-snug">
               <span className="font-semibold">{item.username}</span>{" "}
               {item.title.length > 100 ? (
@@ -308,9 +330,6 @@ const NewsFeedCart = () => {
               )}
             </p>
 
-            {/* Xem bản dịch */}
-
-            {/* Xem tất cả bình luận */}
             <button
               onClick={() => handleModelComment(item)}
               className="text-gray-400 text-sm hover:underline mb-2 block"
@@ -318,7 +337,6 @@ const NewsFeedCart = () => {
               {t("newFed.view")} {item.commentsCount} {t("newFed.comment")}
             </button>
 
-            {/* Danh sách bình luận */}
             <ul className="text-sm space-y-1 max-h-[200px] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-transparent mb-2">
               {(comments[item.id] || []).map((comment, index) => (
                 <li key={index} className="border-b border-gray-700 pb-2">
@@ -327,8 +345,6 @@ const NewsFeedCart = () => {
                 </li>
               ))}
             </ul>
-
-            {/* Nhập bình luận */}
           </div>
         </div>
       ))}

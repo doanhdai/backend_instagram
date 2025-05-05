@@ -19,6 +19,19 @@ export const handleLike = (id_post, id_user) => {
   return instance.post(`/posts/${id_post}/like?userId=${id_user}`);
 };
 
+
+export const getLikedPostIdsByUser = (userId) => {
+  return instance.get(`/posts/liked/user/${userId}`);
+};
+
+export const likePost = (postId, userId) => {
+  return instance.post(`/posts/${postId}/like?userId=${userId}`);
+};
+
+export const unlikePost = (postId, userId) => {
+  return instance.delete(`/posts/${postId}/like?userId=${userId}`);
+};
+
 const handleDeletePost = (id) => {
   return instance.delete(`/posts/${id}`);
 };
