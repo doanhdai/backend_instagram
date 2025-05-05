@@ -37,49 +37,68 @@ const Notification = () => {
   useEffect(() => {
     if (!userInfo?.id) return;
 
-    notificationSocket.init(dispatch, userInfo.id);
+    // notificationSocket.init(dispatch, userInfo.id);
 
     notificationSocket.subscribeToCommentUpdates((data) => {
       console.log("Received comment update:", data);
+
+      const enriched = {
+        ...data,
+        sentAt: data.sentAt || new Date().toISOString(),
+      };
+
       setNotifications((prev) => {
-        if (prev.some((n) => n.id === data.id)) {
+        if (prev.some((n) => n.id === enriched.id)) {
           return prev;
         }
-        return [data, ...prev];
+        return [enriched, ...prev];
       });
     });
 
     notificationSocket.subscribeToLikeUpdates((notification) => {
       console.log("Received like update:", notification);
 
+      // Gán thời gian hiện tại nếu không có sentAt
+      const enrichedNotification = {
+        ...notification,
+        sentAt: notification.sentAt || new Date().toISOString(),
+      };
+
       setNotifications((prev) => {
         if (
           prev.some(
             (n) =>
-              n.postId === notification.postId &&
-              n.userNickname === notification.userNickname &&
-              n.message === notification.message
+              n.postId === enrichedNotification.postId &&
+              n.userNickname === enrichedNotification.userNickname &&
+              n.message === enrichedNotification.message
           )
         ) {
-          console.log("Duplicate like update ignored:", notification);
+          console.log("Duplicate like update ignored:", enrichedNotification);
           return prev;
         }
-        return [notification, ...prev];
+        return [enrichedNotification, ...prev];
       });
     });
 
     notificationSocket.subscribeToFollow((data) => {
       console.log("Received follow update:", data);
+
+      const enriched = {
+        ...data,
+        sentAt: data.sentAt || new Date().toISOString(),
+      };
+
       setNotifications((prev) => {
         if (
           prev.some(
             (n) =>
-              n.fromUserId === data.fromUserId && n.timestamp === data.timestamp
+              n.fromUserId === enriched.fromUserId &&
+              n.sentAt === enriched.sentAt
           )
         ) {
           return prev;
         }
-        return [data, ...prev];
+        return [enriched, ...prev];
       });
     });
 

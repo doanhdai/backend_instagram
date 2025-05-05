@@ -41,7 +41,7 @@ class NotificationSocket {
 
     return new Promise((resolve, reject) => {
       this.socket.on("connect", () => {
-        console.log("✅ Socket.IO connected, socketId: ", this.socket.id);
+        // console.log("✅ Socket.IO connected, socketId: ", this.socket.id);
         this.connected = true;
         this.retryCount = 0;
         resolve();
@@ -103,7 +103,7 @@ class NotificationSocket {
       console.warn("Cannot subscribe to notifications: Socket not initialized");
       return;
     }
-
+    this.socket.off("notification");
     console.log(`Subscribing to notifications for userId=${this.userId}`);
     this.socket.on("notification", (data) => {
       console.log("Raw notification data:", data);
@@ -138,7 +138,6 @@ class NotificationSocket {
       return;
     }
 
-    // Remove any existing listeners for this event to prevent duplicates
     this.socket.off("like_update");
 
     this.socket.on("like_update", (data) => {
@@ -174,7 +173,7 @@ class NotificationSocket {
       );
       return;
     }
-
+this.socket.off("comment_update");
     console.log(`Subscribing to comment updates for userId=${this.userId}`);
     this.socket.on("comment_update", (data) => {
       console.log("Raw comment update data:", data);
@@ -205,7 +204,7 @@ class NotificationSocket {
       );
       return;
     }
-
+this.socket.off("receiveFollowNotification");
     // console.log(`Subscribing to comment updates for userId=${this.userId}`);
     this.socket.on("receiveFollowNotification", (data) => {
       console.log("Raw follow update data:", data);

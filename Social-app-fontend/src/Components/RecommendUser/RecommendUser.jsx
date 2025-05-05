@@ -22,7 +22,7 @@ const RecommendUser = () => {
 
   useEffect(() => {
     fetchData();
-  }, [listOfFollowers]);
+  }, []);
 
   const fetchData = async () => {
     try {

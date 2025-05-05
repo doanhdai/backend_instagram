@@ -42,7 +42,7 @@ const ModalCart = ({
   }, [isOpen, post?.id, userInfo?.id]);
 
   useEffect(() => {
-    notificationSocket.init(dispatch, userInfo.id);
+    // notificationSocket.init(dispatch, userInfo.id);
     notificationSocket.subscribeToCommentUpdates((comment) => {
       if (comment.postId === post.id) {
         setComments((prev) => {

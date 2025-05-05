@@ -50,10 +50,10 @@ const LargeNav = () => {
     });
 
     notificationSocket.subscribeToLikeUpdates((notification) => {
-      console.log("New like received:", notification.receiverId);
-      if (Number(notification.receiverId) === Number(userInfo.id)) {
-        setHasUnreadNotifications(true);
-      }
+      console.log("New like received:", notification);
+      // if (Number(notification.receiverId) === Number(userInfo.id)) {
+      setHasUnreadNotifications(true);
+      // }
     });
 
     // Lắng nghe sự kiện bình luận mới
@@ -65,9 +65,10 @@ const LargeNav = () => {
     });
 
     notificationSocket.subscribeToFollow((data) => {
-      if (data.userId != userInfo.id) {
-        setHasUnreadNotifications(true);
-      }
+      console.log("New follow received:", data);
+      // if (data.userId != userInfo.id) {
+      setHasUnreadNotifications(true);
+      // }
     });
 
     return () => {
@@ -173,7 +174,9 @@ const LargeNav = () => {
           })}
 
           {/* Search panel */}
-          {openSearch && <SearchPanel isOpen= {true} onClose={() => setOpenSearch(false)} />}
+          {openSearch && (
+            <SearchPanel isOpen={true} onClose={() => setOpenSearch(false)} />
+          )}
 
           {/* Nút mở Modal Tạo Post và Story */}
           <button

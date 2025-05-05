@@ -201,8 +201,8 @@ class LikeUpdateDTO {
   private String message;
   private String userNickname;
   private String userImage;
-  private Long receiverId; // ID của chủ bài viết
-  private Long actorId; // ID của người gửi like
+  private Long receiverId;
+  private Long actorId; 
 
   public LikeUpdateDTO(Long postId, Integer likesCount, String message, String userNickname, String userImage, Long receiverId, Long actorId) {
     this.postId = postId;
