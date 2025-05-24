@@ -37,6 +37,7 @@ public class GeminiChatService {
                         )
                 )
         );
+        
         String json = mapper.writeValueAsString(payload);
         StringEntity entity = new StringEntity(json, "UTF-8");
         httpPost.setEntity(entity);
