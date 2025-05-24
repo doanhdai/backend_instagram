@@ -15,14 +15,6 @@ import ChatPage from "../Pages/Chat/ChatPage";
 import StoryViewer from "../Components/Stories/StoryViewer";
 import FriendProfile from "../Components/Profile/UserProfile/FriendProfile";
 const routes = [
-  /**
-   * PATH FOR LOGIN AND REGISTER
-   */
-
-  /**
-   * PATH FOR USER SESSION
-   */
-  // { path: USER_URL + Route.profile + "/:id", element: <Profile /> }, // Thêm id động
   { path: Route.profile, element: <Profile /> },
   { path: Route.default_session, element: <Home /> },
   { path: Route.create_newsfeed, element: <FormCreateNewsFeed /> },
@@ -34,9 +26,6 @@ const routes = [
   { path: Route.chat + "/:conversationId", element: <ChatPage /> },
   { path: Route.story + "/:id", element: <StoryViewer /> },
   { path: Route.search, element: <Search /> },
-  /**
-   * PATH FOR ADMIN SESSION
-   */
   { path: Route.newsfeed, element: <NewsFeed /> },
 ];
 

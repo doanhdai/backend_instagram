@@ -11,7 +11,7 @@ const SearchBar = ({ isOpen, onClose }) => {
   const [originalUsers, setOriginalUsers] = useState([]);
   const [filteredUsers, setFilteredUsers] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
-  const searchRef = useRef(null); // 👈 Đã sửa chỗ này
+  const searchRef = useRef(null); 
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -69,7 +69,7 @@ const SearchBar = ({ isOpen, onClose }) => {
     setFilteredUsers([]);
   };
 
-  if (!isOpen) return null; // 👈 Để đây luôn cho gọn
+  if (!isOpen) return null;
 
   return (
     <div
